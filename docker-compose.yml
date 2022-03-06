@@ -1,0 +1,76 @@
+version: '3.9'
+services:
+  kolikargo-backend:
+    container_name: kolikargo-backend
+    image: kolikargo-backend:1.0.0
+    build:
+      context: .
+      target: development
+      dockerfile: ./Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - kolikargo-network
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: unless-stopped
+    tty: true
+    command: "yarn start"
+    env_file: .env
+    environment:
+      MONGO_URL: mongodb
+      MONGODB_USER: koliadminmng!
+      MONGODB_PASSWORD: koliPasswd123mng!
+
+  mongodb:
+    image: mongo:5.0.0
+    container_name: server-mongodb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=koliadminmng!
+      - MONGO_INITDB_ROOT_PASSWORD=koliPasswd123mng!
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - kolikargo-network
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo localhost:27017/test --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  mongo-express:
+    image: mongo-express
+    container_name: server-mongo-express
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=koliadminmng!
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=koliPasswd123mng!
+      - ME_CONFIG_BASICAUTH_USERNAME=koliadmin
+      - ME_CONFIG_BASICAUTH_PASSWORD=KoliAdm123!
+    volumes:
+      - mongodb-data
+    depends_on:
+      - mongodb
+    networks:
+      - kolikargo-network
+    ports:
+      - "8081:8081"
+    healthcheck:
+      test: wget --quiet --tries=3 --spider http://koliadmin:KoliAdm123!@localhost:8081 || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+
+volumes:
+  mongodb-data:
+    name: mongodb-data
+
+networks:
+  kolikargo-network:
