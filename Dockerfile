@@ -9,7 +9,7 @@ FROM base AS development
 
 RUN yarn install --production=false
 COPY . .
-CMD ["yarn", "start"]
+CMD ["yarn", "start", "--watch"]
 
 
 ### PROD Environment  ###

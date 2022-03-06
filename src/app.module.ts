@@ -5,7 +5,6 @@ import { UserModule } from './user/user.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { TwilioModule } from 'nestjs-twilio';
-import { AuthService } from './auth/auth.service';
 import { AuthModule } from './auth/auth.module';
 
 const MONGODB_URL = process.env.MONGO_URL || 'localhost';

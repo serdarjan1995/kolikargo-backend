@@ -3,6 +3,7 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { UserModel } from './models/user.model';
 import { AuthCodeModel } from './models/authCode.model';
+import { InjectTwilio, TwilioClient } from 'nestjs-twilio';
 
 const userProjection = {
   __v: false,
@@ -14,6 +15,7 @@ export class UserService {
     @InjectModel('User') private readonly userModel: Model<UserModel>,
     @InjectModel('AuthCode')
     private readonly authCodeModel: Model<AuthCodeModel>,
+    @InjectTwilio() private readonly twilioClient: TwilioClient,
   ) {}
 
   public async getUsers(name): Promise<UserModel[]> {
@@ -88,9 +90,7 @@ export class UserService {
 
     const now = new Date();
     const currentCode = await this.authCodeModel
-      .findOne({
-        phoneNumber: phoneNumber,
-      })
+      .findOne({ phoneNumber: phoneNumber })
       .exec();
     if (!currentCode || currentCode.expires < now) {
       const newCode = this.generateCode(6);
@@ -101,6 +101,7 @@ export class UserService {
         code: newCode,
         phoneNumber: phoneNumber,
       };
+      await this.sendSMS(phoneNumber, newCode);
       if (!currentCode) {
         // create a new
         const authCode = await this.authCodeModel.create(newData);
@@ -113,6 +114,14 @@ export class UserService {
       }
     }
     return null;
+  }
+
+  async sendSMS(phoneNumber, code) {
+    return await this.twilioClient.messages.create({
+      body: `Please enter your code: ${code} to continue`,
+      from: process.env.TWILIO_NUMBER,
+      to: phoneNumber,
+    });
   }
 
   generateCode(length: number): number {
