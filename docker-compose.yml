@@ -16,7 +16,7 @@ services:
       - /usr/src/app/node_modules
     restart: unless-stopped
     tty: true
-    command: "yarn start"
+    command: "yarn start:dev"
     env_file: .env
     environment:
       MONGO_URL: mongodb

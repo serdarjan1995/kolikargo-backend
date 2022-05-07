@@ -1,10 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { v4 as uuidV4 } from 'uuid';
-import { Role } from '../../auth/role.enum';
 
 @Schema()
-export class User extends Document {
+export class Location extends Document {
   @Prop({
     type: String,
     unique: true,
@@ -15,16 +14,16 @@ export class User extends Document {
   id: string;
 
   @Prop({ required: true })
-  name: string;
+  country: string;
 
   @Prop({ required: true })
-  surname: string;
+  city: string;
 
-  @Prop({ required: true, unique: true })
-  phoneNumber: string;
+  @Prop({ required: false, default: '' })
+  address: string;
 
-  @Prop({ required: true })
-  roles: Role[];
+  @Prop({ required: false, default: true })
+  enabled: boolean;
 }
 
-export const UserSchema = SchemaFactory.createForClass(User);
+export const LocationSchema = SchemaFactory.createForClass(Location);

@@ -1,37 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
-
-export class UserLogin {
-  @IsNotEmpty()
-  @IsString()
-  phoneNumber: string;
-
-  @IsNotEmpty()
-  @IsNumber()
-  code: number;
-}
-
-export class UserRegister {
-  @IsNotEmpty()
-  @IsString()
-  name: string;
-
-  @IsNotEmpty()
-  @IsString()
-  surname: string;
-
-  @IsNotEmpty()
-  @IsString()
-  phoneNumber: string;
-}
-
-export class RequestCode {
-  @IsNotEmpty()
-  @IsString()
-  phoneNumber: string;
-}
+import { UserModel } from '../user/models/user.model';
 
 @Injectable()
 export class AuthService {
@@ -41,7 +11,11 @@ export class AuthService {
   ) {}
 
   async validateUser(phoneNumber: string, authCode: number): Promise<any> {
-    const user = await this.userService.getUserBy({ phoneNumber: phoneNumber });
+    const user = await this.userService.getUserBy(
+      { phoneNumber: phoneNumber },
+      true,
+      false,
+    );
     if (!user) {
       return null;
     }
@@ -59,8 +33,12 @@ export class AuthService {
     await this.userService.expireAuthCode(phoneNumber);
   }
 
-  async login(user: UserLogin) {
-    const payload = { phoneNumber: user.phoneNumber };
+  async login(user: UserModel) {
+    const payload = {
+      phoneNumber: user.phoneNumber,
+      userId: user.id,
+      roles: user.roles,
+    };
     return {
       access_token: this.jwtService.sign(payload),
     };

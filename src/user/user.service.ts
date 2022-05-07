@@ -1,12 +1,15 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { UserModel } from './models/user.model';
+import { UserModel, UserRegister } from './models/user.model';
 import { AuthCodeModel } from './models/authCode.model';
 import { InjectTwilio, TwilioClient } from 'nestjs-twilio';
+import { Role } from '../auth/role.enum';
 
 const userProjection = {
   __v: false,
+  _id: false,
+  roles: false,
 };
 
 @Injectable()
@@ -21,15 +24,28 @@ export class UserService {
   public async getUsers(name): Promise<UserModel[]> {
     const filters = {};
     if (name) {
-      filters['name'] = name;
+      filters['name'] = { $regex: `.*${name}.*`, $options: 'i' };
     }
     return await this.userModel.find(filters, userProjection).exec();
   }
 
-  public async createUser(newUser: UserModel): Promise<UserModel> {
-    const user = await this.userModel.create(newUser);
+  public async createUser(newUser: UserRegister): Promise<UserModel> {
+    const isPhoneNumberRegistered = await this.getUserBy(
+      {
+        phoneNumber: newUser.phoneNumber,
+      },
+      false,
+    );
+    if (isPhoneNumberRegistered) {
+      throw new HttpException('Phone Number registered', 400);
+    }
+    const user = await this.userModel.create({
+      ...newUser,
+      roles: [Role.User],
+    });
     await user.validate();
-    return user.save();
+    await user.save();
+    return await this.getUser(user._id);
   }
 
   public async getUser(id): Promise<UserModel> {
@@ -45,8 +61,11 @@ export class UserService {
   public async getUserBy(
     filter: object,
     raiseException = true,
+    useProjection = true,
   ): Promise<UserModel> {
-    const user = await this.userModel.findOne(filter, userProjection).exec();
+    const user = await this.userModel
+      .findOne(filter, useProjection ? userProjection : null)
+      .exec();
     if (!user && raiseException) {
       throw new HttpException('Not Found', 404);
     }
@@ -101,7 +120,7 @@ export class UserService {
         code: newCode,
         phoneNumber: phoneNumber,
       };
-      await this.sendSMS(phoneNumber, newCode);
+      // await this.sendSMS(phoneNumber, newCode);
       if (!currentCode) {
         // create a new
         const authCode = await this.authCodeModel.create(newData);
@@ -125,6 +144,7 @@ export class UserService {
   }
 
   generateCode(length: number): number {
+    return 488257;
     let result = '';
     const characters = '0123456789';
     const charactersLength = characters.length;
@@ -132,5 +152,16 @@ export class UserService {
       result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
     return Number(result);
+  }
+
+  public async idToObjectId(id: string): Promise<Types.ObjectId> {
+    if (!id) {
+      throw new HttpException(`User id should be specified`, 400);
+    }
+    const user = await this.userModel.findOne({ id: id }).exec();
+    if (!user) {
+      throw new HttpException(`User ${id} Not Found`, 404);
+    }
+    return user._id;
   }
 }
