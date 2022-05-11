@@ -13,12 +13,14 @@ const MONGODB_URL = process.env.MONGO_URL || 'localhost';
 const MONGODB_USER = process.env.MONGODB_USER;
 const MONGODB_PASSWORD = process.env.MONGODB_PASSWORD;
 
+const MONGO_CONNECTION_STR =
+  process.env.MONGO_CONNECTION_STR ||
+  `mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@${MONGODB_URL}:27017/kolikargo?serverSelectionTimeoutMS=2000&authSource=admin`;
+
 @Module({
   imports: [
     ConfigModule.forRoot({ envFilePath: '.env' }),
-    MongooseModule.forRoot(
-      `mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@${MONGODB_URL}:27017/kolikargo?serverSelectionTimeoutMS=2000&authSource=admin`,
-    ),
+    MongooseModule.forRoot(MONGO_CONNECTION_STR, { sslValidate: false }),
     TwilioModule.forRoot({
       accountSid: process.env.TWILIO_ACCOUNT_SID,
       authToken: process.env.TWILIO_AUTH_TOKEN,
