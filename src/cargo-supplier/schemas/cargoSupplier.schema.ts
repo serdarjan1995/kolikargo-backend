@@ -58,6 +58,9 @@ export class CargoSupplier extends Document {
 
   @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Location' }] })
   serviceDestinationLocations: [Types.ObjectId];
+
+  @Prop({ required: true })
+  avatarUrl: string;
 }
 
 export const CargoSupplierSchema = SchemaFactory.createForClass(CargoSupplier);

@@ -16,6 +16,9 @@ export class CargoSupplierModel {
   @IsString()
   readonly description: string;
 
+  @IsString()
+  readonly avatarUrl: string;
+
   @IsOptional()
   @IsNumber()
   readonly stars: number;
