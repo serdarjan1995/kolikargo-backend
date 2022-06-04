@@ -8,6 +8,8 @@ import { TwilioModule } from 'nestjs-twilio';
 import { AuthModule } from './auth/auth.module';
 import { CargoSupplierModule } from './cargo-supplier/cargo-supplier.module';
 import { LocationModule } from './location/location.module';
+import { CargoTypeModule } from './cargo-type/cargo-type.module';
+import { CargoMethodModule } from './cargo-method/cargo-method.module';
 
 const MONGODB_URL = process.env.MONGO_URL || 'localhost';
 const MONGODB_USER = process.env.MONGODB_USER;
@@ -29,6 +31,8 @@ const MONGO_CONNECTION_STR =
     AuthModule,
     CargoSupplierModule,
     LocationModule,
+    CargoTypeModule,
+    CargoMethodModule,
   ],
   controllers: [AppController],
   providers: [AppService],
