@@ -57,6 +57,7 @@ export class CargoMethodService {
     id: string,
     updateParams: any,
   ): Promise<CargoMethodModel> {
+    delete updateParams.id;
     const cargoMethod = await this.cargoMethodModel
       .findOneAndUpdate({ id: id }, updateParams)
       .exec();

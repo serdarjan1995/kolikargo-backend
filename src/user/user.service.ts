@@ -72,9 +72,12 @@ export class UserService {
     return user;
   }
 
-  public async updateUser(id, name, surname): Promise<UserModel> {
+  public async updateUser(userId, name, surname): Promise<UserModel> {
     const user = await this.userModel
-      .findOneAndUpdate({ _id: id }, { name, surname })
+      .findOneAndUpdate(
+        { id: await this.idToObjectId(userId) },
+        { name, surname },
+      )
       .exec();
     if (!user) {
       throw new HttpException('Not Found', 404);

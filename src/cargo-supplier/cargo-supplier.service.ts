@@ -85,6 +85,7 @@ export class CargoSupplierService {
     id: string,
     updateParams: any,
   ): Promise<CargoSupplierModel> {
+    delete updateParams.id;
     // find all locations and replace object ids
     updateParams.serviceSourceLocations = await this.populateLocations(
       updateParams.serviceSourceLocations,

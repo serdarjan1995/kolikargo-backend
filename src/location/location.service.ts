@@ -40,8 +40,9 @@ export class LocationService {
 
   public async updateLocation(
     id: string,
-    updateParams: object,
+    updateParams: any,
   ): Promise<LocationModel> {
+    delete updateParams.id;
     const location = await this.locationModel
       .findOneAndUpdate({ id: id }, updateParams)
       .exec();
