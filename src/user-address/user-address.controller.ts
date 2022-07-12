@@ -1,6 +1,6 @@
 import {
   Body,
-  Controller,
+  Controller, Delete,
   Get,
   Param,
   Post,
@@ -65,5 +65,11 @@ export class UserAddressController {
       req.user.userId,
       userAddress,
     );
+  }
+
+  @Delete(':id')
+  @Roles(Role.User)
+  public async deleteCargoType(@Param('id') id: string) {
+    return this.userAddressService.deleteUserAddress(id);
   }
 }

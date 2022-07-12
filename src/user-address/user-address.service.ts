@@ -89,4 +89,12 @@ export class UserAddressService {
       .updateMany({ type, user }, { isDefault: false })
       .exec();
   }
+
+  public async deleteUserAddress(id): Promise<any> {
+    const userAddress = await this.userAddressModel.deleteOne({ id: id });
+    if (!userAddress.deletedCount) {
+      throw new HttpException('Not Found', 404);
+    }
+    return userAddress;
+  }
 }

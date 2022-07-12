@@ -2,8 +2,8 @@ import {
   IsNotEmpty,
   IsString,
   IsBoolean,
-  IsOptional,
-  IsEnum, ValidateIf,
+  IsEnum,
+  ValidateIf,
 } from 'class-validator';
 
 export enum AddressType {

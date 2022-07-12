@@ -111,4 +111,17 @@ export class CargoSupplierService {
     }
     return locations;
   }
+
+  public async idToObjectId(id: string): Promise<Types.ObjectId> {
+    if (!id) {
+      throw new HttpException(`CargoSupplier id should be specified`, 400);
+    }
+    const cargoSupplier = await this.cargoSupplierModel
+      .findOne({ id: id })
+      .exec();
+    if (!cargoSupplier) {
+      throw new HttpException(`CargoSupplier ${id} Not Found`, 404);
+    }
+    return cargoSupplier._id;
+  }
 }
