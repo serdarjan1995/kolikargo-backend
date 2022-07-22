@@ -116,7 +116,7 @@ export class UserService {
       .exec();
     if (!currentCode || currentCode.expires < now) {
       const newCode = this.generateCode(6);
-      const minutes = 5;
+      const minutes = 2;
       const expiresAt = new Date(now.getTime() + minutes * 60000);
       const newData = {
         expires: expiresAt,

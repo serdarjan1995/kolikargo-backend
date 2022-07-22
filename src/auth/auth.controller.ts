@@ -1,11 +1,35 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Post, Request, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './local-auth.guard';
 import { JwtAuthGuard } from './jwt-auth.guard';
-import { RequestCode, UserRegister } from '../user/models/user.model';
+import {
+  RequestCode,
+  UserLogin,
+  UserModel,
+  UserRegister,
+} from '../user/models/user.model';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiBody,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 
 @Controller('auth')
+@ApiTags('auth')
 export class AuthController {
   constructor(
     private authService: AuthService,
@@ -14,11 +38,38 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
+  @ApiOkResponse({
+    description: 'Login Successful response',
+    schema: {
+      type: 'object',
+      properties: {
+        access_token: { type: 'string', description: 'Access token' },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Login Fail response',
+  })
+  @ApiBody({
+    type: UserLogin,
+  })
   public async login(@Request() req) {
     return this.authService.login(req.user);
   }
 
   @Post('request-code')
+  @ApiCreatedResponse({
+    description: 'Successful response',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', description: 'Operation result' },
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    description: 'Error response',
+  })
   public async requestCode(@Body() reqCode: RequestCode) {
     if (!reqCode.phoneNumber) {
       throw new HttpException(
@@ -38,6 +89,15 @@ export class AuthController {
   }
 
   @Post('register')
+  @ApiCreatedResponse({
+    description: 'Successful response',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', description: 'Operation result' },
+      },
+    },
+  })
   public async register(@Body() req: UserRegister) {
     const user = await this.userService.getUserBy(
       { phoneNumber: req.phoneNumber },
@@ -58,6 +118,11 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: UserModel,
+  })
   getProfile(@Request() req) {
     return this.userService.getUserBy({ id: req.user.userId });
   }

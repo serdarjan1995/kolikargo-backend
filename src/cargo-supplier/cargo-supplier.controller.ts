@@ -15,27 +15,84 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../auth/role.enum';
+import { LocationService } from '../location/location.service';
+import { ListFilterCargoSupplierModel } from './models/ListFilterCargoSupplier.model';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @Controller('cargo-supplier')
 @UseGuards(RolesGuard)
 @UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+@ApiTags('cargo-supplier')
 export class CargoSupplierController {
-  constructor(private cargoSupplierService: CargoSupplierService) {}
+  constructor(
+    private cargoSupplierService: CargoSupplierService,
+    private locationService: LocationService,
+  ) {}
 
   @Get()
   @Roles(Role.User)
-  public async getCargoSuppliers(@Query() query) {
-    const name = query.name;
-    const weight = query.weight;
-    const filter = {
-      name: { $regex: `.*${name}.*`, $options: 'i' },
-      minWeight: { $lt: weight },
-    };
-    return await this.cargoSupplierService.getCargoSuppliers({ filter });
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: CargoSupplierModel,
+    isArray: true,
+  })
+  public async getCargoSuppliers(@Query() query: ListFilterCargoSupplierModel) {
+    const filter = {};
+    const name = query?.name;
+    const minWeight = query?.minWeight;
+    const maxWeight = query?.maxWeight;
+    const featured = query?.featured;
+    const destinationLocation = query?.destinationLocation;
+    const sourceLocation = query?.sourceLocation;
+
+    if (name) {
+      filter['name'] = { $regex: `.*${name}.*`, $options: 'i' };
+    }
+
+    if (minWeight) {
+      filter['minWeight'] = { $gte: minWeight };
+    }
+
+    if (maxWeight) {
+      filter['minWeight'] = { $lte: maxWeight };
+    }
+
+    if (featured) {
+      filter['featured'] = featured;
+    }
+
+    if (destinationLocation) {
+      const destinationLocationObjectId =
+        await this.locationService.idToObjectId(destinationLocation);
+      filter['serviceDestinationLocations'] = {
+        $in: destinationLocationObjectId,
+      };
+    }
+
+    if (sourceLocation) {
+      const sourceLocationObjectId = await this.locationService.idToObjectId(
+        sourceLocation,
+      );
+      filter['serviceSourceLocations'] = {
+        $in: sourceLocationObjectId,
+      };
+    }
+
+    return await this.cargoSupplierService.getCargoSuppliers(filter);
   }
 
   @Post()
   @Roles(Role.Admin)
+  @ApiCreatedResponse({
+    description: 'Successful response',
+    type: CargoSupplierModel,
+  })
   public createCargoSupplier(
     @Request() req,
     @Body() cargoSupplier: CargoSupplierModel,
@@ -45,12 +102,20 @@ export class CargoSupplierController {
 
   @Get(':id')
   @Roles(Role.User)
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: CargoSupplierModel,
+  })
   public async getCargoSupplierById(@Param('id') id: string) {
     return this.cargoSupplierService.getCargoSupplier(id);
   }
 
   @Put(':id')
   @Roles(Role.Admin)
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: CargoSupplierModel,
+  })
   public async updateCargoSupplier(
     @Param('id') id: string,
     @Body() cargoSupplier: CargoSupplierModel,
