@@ -29,8 +29,7 @@ import {
 @ApiBearerAuth()
 @ApiTags('cargo-method')
 export class CargoMethodController {
-  constructor(private cargoMethodService: CargoMethodService) {
-  }
+  constructor(private cargoMethodService: CargoMethodService) {}
 
   @Get()
   @Roles(Role.User)

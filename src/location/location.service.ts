@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { LocationModel } from './models/location.model';
+import { CreateLocationModel, LocationModel } from './models/location.model';
 
 const locationProjection = {
   __v: false,
@@ -20,7 +20,7 @@ export class LocationService {
   }
 
   public async createLocation(
-    newLocation: LocationModel,
+    newLocation: CreateLocationModel,
   ): Promise<LocationModel> {
     const location = await this.locationModel.create(newLocation);
     await location.validate();
