@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CargoMethodService } from './cargo-method.service';
-import { CargoMethodModel } from './models/cargoMethod.model';
+import { CargoMethodModel, CreateCargoMethodModel } from './models/cargoMethod.model';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -59,7 +59,7 @@ export class CargoMethodController {
   })
   public createCargoMethod(
     @Request() req,
-    @Body() cargoMethod: CargoMethodModel,
+    @Body() cargoMethod: CreateCargoMethodModel,
   ) {
     return this.cargoMethodService.createCargoMethod(cargoMethod);
   }

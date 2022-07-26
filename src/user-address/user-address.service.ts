@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { UserAddressModel } from './models/userAddress.model';
+import { CreateUserAddressModel, UserAddressModel } from './models/userAddress.model';
 import { UserService } from '../user/user.service';
 
 const userAddressModelProjection = {
@@ -29,7 +29,7 @@ export class UserAddressService {
   }
 
   public async createUserAddress(
-    newUserAddress: UserAddressModel,
+    newUserAddress: CreateUserAddressModel,
     userId: string,
   ): Promise<UserAddressModel> {
     const user = await this.userService.idToObjectId(userId);

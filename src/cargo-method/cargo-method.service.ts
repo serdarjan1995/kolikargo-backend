@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CargoMethodModel } from './models/cargoMethod.model';
+import { CargoMethodModel, CreateCargoMethodModel } from './models/cargoMethod.model';
 
 const cargoMethodModelProjection = {
   _id: false,
@@ -22,7 +22,7 @@ export class CargoMethodService {
   }
 
   public async createCargoMethod(
-    newCargoMethod: CargoMethodModel,
+    newCargoMethod: CreateCargoMethodModel,
   ): Promise<CargoMethodModel> {
     const existingCargoMethod = await this.getCargoMethods({
       name: {

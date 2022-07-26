@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UserAddressService } from './user-address.service';
-import { AddressType, UserAddressModel } from './models/userAddress.model';
+import { AddressType, CreateUserAddressModel, UserAddressModel } from './models/userAddress.model';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -64,7 +64,7 @@ export class UserAddressController {
   })
   public createUserAddress(
     @Request() req,
-    @Body() userAddress: UserAddressModel,
+    @Body() userAddress: CreateUserAddressModel,
   ) {
     return this.userAddressService.createUserAddress(
       userAddress,

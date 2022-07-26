@@ -7,7 +7,7 @@ import {
   IsOptional,
   IsUUID,
 } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, OmitType } from '@nestjs/swagger';
 
 export enum AddressType {
   SENDER = 'sender',
@@ -123,3 +123,7 @@ export class UserAddressModel {
 
   user: any;
 }
+
+export class CreateUserAddressModel extends OmitType(UserAddressModel, [
+  'id',
+] as const) {}

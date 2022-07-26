@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, OmitType } from '@nestjs/swagger';
 
 export class CargoMethodModel {
   @IsOptional()
@@ -23,3 +23,7 @@ export class CargoMethodModel {
   })
   readonly description: string;
 }
+
+export class CreateCargoMethodModel extends OmitType(CargoMethodModel, [
+  'id',
+] as const) {}

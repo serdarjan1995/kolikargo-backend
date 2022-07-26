@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CargoTypeService } from './cargo-type.service';
-import { CargoTypeModel } from './models/cargoType.model';
+import { CargoTypeModel, CreateCargoTypeModel } from './models/cargoType.model';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -57,7 +57,10 @@ export class CargoTypeController {
     description: 'Successful Response',
     type: CargoTypeModel,
   })
-  public createCargoType(@Request() req, @Body() cargoType: CargoTypeModel) {
+  public createCargoType(
+    @Request() req,
+    @Body() cargoType: CreateCargoTypeModel,
+  ) {
     return this.cargoTypeService.createCargoType(cargoType);
   }
 
