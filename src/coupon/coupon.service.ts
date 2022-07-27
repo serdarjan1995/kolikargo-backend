@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
@@ -57,7 +57,7 @@ export class CouponService {
     if (existingCoupon.length) {
       throw new HttpException(
         'Coupon code or title already exists, please check entries',
-        400,
+        HttpStatus.BAD_REQUEST,
       );
     }
 
@@ -73,7 +73,7 @@ export class CouponService {
       .populate(this.populateFields)
       .exec();
     if (!coupon) {
-      throw new HttpException('Not Found', 404);
+      throw new HttpException('Coupon Not Found', HttpStatus.NOT_FOUND);
     }
     return coupon;
   }
@@ -87,7 +87,7 @@ export class CouponService {
       .findOneAndUpdate({ id: id }, updateParams)
       .exec();
     if (!coupon) {
-      throw new HttpException('Not Found', 404);
+      throw new HttpException('Coupon Not Found', HttpStatus.NOT_FOUND);
     }
     return this.getCoupon(coupon.id);
   }
@@ -95,7 +95,7 @@ export class CouponService {
   public async deleteCoupon(id): Promise<any> {
     const coupon = await this.couponModel.deleteOne({ id: id });
     if (!coupon.deletedCount) {
-      throw new HttpException('Not Found', 404);
+      throw new HttpException('Coupon Not Found', HttpStatus.NOT_FOUND);
     }
     return coupon;
   }
@@ -114,12 +114,12 @@ export class CouponService {
     }
     const coupons = await this.getCoupons(filter);
     if (!coupons.length) {
-      throw new HttpException('Not Found', 404);
+      throw new HttpException('Coupon Not Found', HttpStatus.NOT_FOUND);
     }
 
     const validCoupon: CouponModel = coupons[0];
     if (validCoupon.supplier && validCoupon.supplier?.id !== coupon.supplier) {
-      throw new HttpException('Not Found', 404);
+      throw new HttpException('Coupon Not Found', HttpStatus.NOT_FOUND);
     }
 
     return validCoupon;

@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CargoSupplierModel } from './models/cargoSupplier.model';
@@ -47,7 +47,10 @@ export class CargoSupplierService {
       phoneNumber: newCargoSupplier.phoneNumber,
     });
     if (existingCargoSupplier.length) {
-      throw new HttpException('Company phone number already registered', 400);
+      throw new HttpException(
+        'Company phone number already registered',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     // find all locations and replace object ids
@@ -76,7 +79,19 @@ export class CargoSupplierService {
       .populate(this.populateFields)
       .exec();
     if (!cargoSupplier) {
-      throw new HttpException('Not Found', 404);
+      throw new HttpException('Cargo Supplier Not Found', HttpStatus.NOT_FOUND);
+    }
+    return cargoSupplier;
+  }
+
+  public async getCargoSupplierByUser(id, userId): Promise<CargoSupplierModel> {
+    const user = await this.userService.idToObjectId(userId);
+    const cargoSupplier = await this.cargoSupplierModel
+      .findOne({ id: id, user: user._id }, cargoSupplierModelProjection)
+      .populate(this.populateFields)
+      .exec();
+    if (!cargoSupplier) {
+      throw new HttpException('Cargo Supplier Not Found', HttpStatus.NOT_FOUND);
     }
     return cargoSupplier;
   }
@@ -98,7 +113,7 @@ export class CargoSupplierService {
       .findOneAndUpdate({ id: id }, updateParams)
       .exec();
     if (!cargoSupplier) {
-      throw new HttpException('Not Found', 404);
+      throw new HttpException('Cargo Supplier Not Found', HttpStatus.NOT_FOUND);
     }
     return this.getCargoSupplier(cargoSupplier.id);
   }
@@ -114,13 +129,19 @@ export class CargoSupplierService {
 
   public async idToObjectId(id: string): Promise<Types.ObjectId> {
     if (!id) {
-      throw new HttpException(`CargoSupplier id should be specified`, 400);
+      throw new HttpException(
+        `CargoSupplier id should be specified`,
+        HttpStatus.BAD_REQUEST,
+      );
     }
     const cargoSupplier = await this.cargoSupplierModel
       .findOne({ id: id })
       .exec();
     if (!cargoSupplier) {
-      throw new HttpException(`CargoSupplier ${id} Not Found`, 404);
+      throw new HttpException(
+        `CargoSupplier ${id} Not Found`,
+        HttpStatus.NOT_FOUND,
+      );
     }
     return cargoSupplier._id;
   }

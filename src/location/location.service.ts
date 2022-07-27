@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CreateLocationModel, LocationModel } from './models/location.model';
@@ -33,7 +33,7 @@ export class LocationService {
       .findOne({ id: id }, locationProjection)
       .exec();
     if (!location) {
-      throw new HttpException('Not Found', 404);
+      throw new HttpException('Location Not Found', HttpStatus.NOT_FOUND);
     }
     return location;
   }
@@ -47,7 +47,7 @@ export class LocationService {
       .findOneAndUpdate({ id: id }, updateParams)
       .exec();
     if (!location) {
-      throw new HttpException('Not Found', 404);
+      throw new HttpException('Location Not Found', HttpStatus.NOT_FOUND);
     }
     return this.getLocation(location.id);
   }
@@ -55,7 +55,7 @@ export class LocationService {
   public async idToObjectId(id: string): Promise<Types.ObjectId> {
     const location = await this.locationModel.findOne({ id: id }).exec();
     if (!location) {
-      throw new HttpException(`Location ${id} Not Found`, 404);
+      throw new HttpException(`Location ${id} Not Found`, HttpStatus.NOT_FOUND);
     }
     return location._id;
   }

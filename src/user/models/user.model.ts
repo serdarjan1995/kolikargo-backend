@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { Role } from '../../auth/role.enum';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -78,6 +84,29 @@ export class RequestCode {
   @IsString()
   @ApiProperty({
     description: 'Phone number to login. Successful response will send sms',
+  })
+  phoneNumber: string;
+}
+
+export class AuthenticatedUser {
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty({
+    description: 'ID of the user',
+  })
+  userId: string;
+
+  @IsNotEmpty()
+  @IsArray()
+  @ApiProperty({
+    description: 'User roles',
+  })
+  roles: string[];
+
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty({
+    description: 'Phone number of the user',
   })
   phoneNumber: string;
 }

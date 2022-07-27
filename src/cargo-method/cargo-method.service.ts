@@ -1,7 +1,10 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { CargoMethodModel, CreateCargoMethodModel } from './models/cargoMethod.model';
+import { Model, Types } from 'mongoose';
+import {
+  CargoMethodModel,
+  CreateCargoMethodModel,
+} from './models/cargoMethod.model';
 
 const cargoMethodModelProjection = {
   _id: false,
@@ -33,7 +36,7 @@ export class CargoMethodService {
     if (existingCargoMethod.length) {
       throw new HttpException(
         'Cargo method already exists, please check name',
-        400,
+        HttpStatus.BAD_REQUEST,
       );
     }
 
@@ -48,7 +51,7 @@ export class CargoMethodService {
       .findOne({ id: id }, cargoMethodModelProjection)
       .exec();
     if (!cargoMethod) {
-      throw new HttpException('Not Found', 404);
+      throw new HttpException('Cargo Method Not Found', HttpStatus.NOT_FOUND);
     }
     return cargoMethod;
   }
@@ -62,7 +65,7 @@ export class CargoMethodService {
       .findOneAndUpdate({ id: id }, updateParams)
       .exec();
     if (!cargoMethod) {
-      throw new HttpException('Not Found', 404);
+      throw new HttpException('Cargo Method Not Found', HttpStatus.NOT_FOUND);
     }
     return this.getCargoMethod(cargoMethod.id);
   }
@@ -70,8 +73,25 @@ export class CargoMethodService {
   public async deleteCargoMethod(id): Promise<any> {
     const cargoMethod = await this.cargoMethodModel.deleteOne({ id: id });
     if (!cargoMethod.deletedCount) {
-      throw new HttpException('Not Found', 404);
+      throw new HttpException('Cargo Method Not Found', HttpStatus.NOT_FOUND);
     }
     return cargoMethod;
+  }
+
+  public async idToObjectId(id: string): Promise<Types.ObjectId> {
+    if (!id) {
+      throw new HttpException(
+        `CargoMethod id should be specified`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const cargoMethod = await this.cargoMethodModel.findOne({ id: id }).exec();
+    if (!cargoMethod) {
+      throw new HttpException(
+        `CargoMethod ${id} Not Found`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return cargoMethod._id;
   }
 }

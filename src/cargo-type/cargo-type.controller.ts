@@ -19,7 +19,8 @@ import { Role } from '../auth/role.enum';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
-  ApiOkResponse, ApiQuery,
+  ApiOkResponse,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 

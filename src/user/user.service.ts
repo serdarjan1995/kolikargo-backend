@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { UserModel, UserRegister } from './models/user.model';
@@ -37,7 +37,10 @@ export class UserService {
       false,
     );
     if (isPhoneNumberRegistered) {
-      throw new HttpException('Phone Number registered', 400);
+      throw new HttpException(
+        'Phone Number registered',
+        HttpStatus.BAD_REQUEST,
+      );
     }
     const user = await this.userModel.create({
       ...newUser,
@@ -53,7 +56,7 @@ export class UserService {
       .findOne({ _id: id }, userProjection)
       .exec();
     if (!user) {
-      throw new HttpException('Not Found', 404);
+      throw new HttpException('User Not Found', HttpStatus.NOT_FOUND);
     }
     return user;
   }
@@ -67,7 +70,7 @@ export class UserService {
       .findOne(filter, useProjection ? userProjection : null)
       .exec();
     if (!user && raiseException) {
-      throw new HttpException('Not Found', 404);
+      throw new HttpException('User Not Found', HttpStatus.NOT_FOUND);
     }
     return user;
   }
@@ -80,7 +83,7 @@ export class UserService {
       )
       .exec();
     if (!user) {
-      throw new HttpException('Not Found', 404);
+      throw new HttpException('User Not Found', HttpStatus.NOT_FOUND);
     }
     return user;
   }
@@ -106,7 +109,10 @@ export class UserService {
     const user = await this.getUserBy({ phoneNumber: phoneNumber });
     if (!user) {
       if (!user) {
-        throw new HttpException('Number has not been registered', 404);
+        throw new HttpException(
+          'Number has not been registered',
+          HttpStatus.NOT_FOUND,
+        );
       }
     }
 
@@ -159,11 +165,14 @@ export class UserService {
 
   public async idToObjectId(id: string): Promise<Types.ObjectId> {
     if (!id) {
-      throw new HttpException(`User id should be specified`, 400);
+      throw new HttpException(
+        `User id should be specified`,
+        HttpStatus.BAD_REQUEST,
+      );
     }
     const user = await this.userModel.findOne({ id: id }).exec();
     if (!user) {
-      throw new HttpException(`User ${id} Not Found`, 404);
+      throw new HttpException(`User ${id} Not Found`, HttpStatus.NOT_FOUND);
     }
     return user._id;
   }

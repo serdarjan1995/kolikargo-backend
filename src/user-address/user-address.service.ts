@@ -1,7 +1,10 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { CreateUserAddressModel, UserAddressModel } from './models/userAddress.model';
+import {
+  CreateUserAddressModel,
+  UserAddressModel,
+} from './models/userAddress.model';
 import { UserService } from '../user/user.service';
 
 const userAddressModelProjection = {
@@ -53,7 +56,7 @@ export class UserAddressService {
       )
       .exec();
     if (!userAddress) {
-      throw new HttpException('Not Found', 404);
+      throw new HttpException('User Address Not Found', HttpStatus.NOT_FOUND);
     }
     return userAddress;
   }
@@ -76,7 +79,7 @@ export class UserAddressService {
       .findOneAndUpdate({ id: id, user: user }, updateParams)
       .exec();
     if (!userAddress) {
-      throw new HttpException('Not Found', 404);
+      throw new HttpException('User Address Not Found', HttpStatus.NOT_FOUND);
     }
     return this.getUserAddress(userAddress.id, userId);
   }
@@ -93,7 +96,7 @@ export class UserAddressService {
   public async deleteUserAddress(id): Promise<any> {
     const userAddress = await this.userAddressModel.deleteOne({ id: id });
     if (!userAddress.deletedCount) {
-      throw new HttpException('Not Found', 404);
+      throw new HttpException('User Address Not Found', HttpStatus.NOT_FOUND);
     }
     return userAddress;
   }

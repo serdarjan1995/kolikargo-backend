@@ -26,6 +26,7 @@ export class ListFilterCargoSupplierModel {
   readonly featured: boolean;
 
   @IsNumber()
+  @Type(() => Number)
   @IsOptional()
   @ApiPropertyOptional({
     description: 'Min weight of the service',
@@ -34,6 +35,7 @@ export class ListFilterCargoSupplierModel {
   readonly minWeight: number;
 
   @IsNumber()
+  @Type(() => Number)
   @IsOptional()
   @ApiPropertyOptional({
     description: 'Max weight of the service',
@@ -58,4 +60,14 @@ export class ListFilterCargoSupplierModel {
     example: '986dcaf4-c1ea-4218-b6b4-e4fd95a3c28e',
   })
   destinationLocation: string;
+
+  @IsUUID()
+  @IsOptional()
+  @ApiPropertyOptional({
+    description:
+      'Cargo Type id to filter if supplier is providing service to send specific cargo type. ' +
+      'Get valid cargo type ids from `/cargo-type` endpoint',
+    example: '986dcaf4-c1ea-4218-b6b4-e4fd95a3c28e',
+  })
+  cargoType: string;
 }

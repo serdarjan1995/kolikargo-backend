@@ -9,7 +9,12 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ApiProperty, ApiPropertyOptional, OmitType, PickType } from '@nestjs/swagger';
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+  OmitType,
+  PickType,
+} from '@nestjs/swagger';
 
 export enum CouponType {
   UNIVERSAL = 'universal',
@@ -81,7 +86,7 @@ export class CouponModel {
   @IsOptional()
   @IsNumber()
   @ApiPropertyOptional({
-    description: 'Min weight for this coupon to be valid'
+    description: 'Min weight for this coupon to be valid',
   })
   readonly minWeight: number;
 

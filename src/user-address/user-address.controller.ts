@@ -11,7 +11,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UserAddressService } from './user-address.service';
-import { AddressType, CreateUserAddressModel, UserAddressModel } from './models/userAddress.model';
+import {
+  AddressType,
+  CreateUserAddressModel,
+  UserAddressModel,
+} from './models/userAddress.model';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';

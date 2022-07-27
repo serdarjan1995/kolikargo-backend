@@ -23,6 +23,8 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { CargoTypeService } from '../cargo-type/cargo-type.service';
+import { CargoPricingService } from '../cargo-pricing/cargo-pricing.service';
 
 @Controller('cargo-supplier')
 @UseGuards(RolesGuard)
@@ -33,6 +35,8 @@ export class CargoSupplierController {
   constructor(
     private cargoSupplierService: CargoSupplierService,
     private locationService: LocationService,
+    private cargoTypeService: CargoTypeService,
+    private cargoPricingService: CargoPricingService,
   ) {}
 
   @Get()
@@ -50,6 +54,7 @@ export class CargoSupplierController {
     const featured = query?.featured;
     const destinationLocation = query?.destinationLocation;
     const sourceLocation = query?.sourceLocation;
+    const cargoType = query?.cargoType;
 
     if (name) {
       filter['name'] = { $regex: `.*${name}.*`, $options: 'i' };
@@ -81,6 +86,17 @@ export class CargoSupplierController {
       );
       filter['serviceSourceLocations'] = {
         $in: sourceLocationObjectId,
+      };
+    }
+
+    if (cargoType) {
+      // check if supplier has valid pricing to support this cargo type
+      const cargoTypeObj = await this.cargoTypeService.idToObjectId(cargoType);
+      const cargoPricing = await this.cargoPricingService.filterCargoPricing({
+        cargoType: cargoTypeObj._id,
+      });
+      filter['_id'] = {
+        $in: cargoPricing.map((item) => item.supplier),
       };
     }
 

@@ -2,7 +2,8 @@ import {
   Body,
   Controller,
   Delete,
-  Get, HttpCode,
+  Get,
+  HttpCode,
   Param,
   Post,
   Put,
@@ -62,7 +63,6 @@ export class CouponController {
   @ApiCreatedResponse({
     description: 'Successful Response',
     type: CouponModel,
-    isArray: true,
   })
   public createCoupon(@Request() req, @Body() coupon: CreateCouponModel) {
     return this.couponService.createCoupon(coupon);
@@ -95,7 +95,6 @@ export class CouponController {
   @Roles(Role.Admin)
   @ApiOkResponse({
     description: 'Successful Response',
-    type: CouponModel,
   })
   public async deleteCoupon(@Param('id') id: string) {
     return this.couponService.deleteCoupon(id);
