@@ -57,9 +57,9 @@ export class CargoPricingService {
       newCargoPricing.cargoType,
     );
 
-    newCargoPricing.supplier = objectIds.cargoMethod;
+    newCargoPricing.supplier = objectIds.supplier;
     newCargoPricing.cargoType = objectIds.cargoType;
-    newCargoPricing.cargoMethod = objectIds.supplier;
+    newCargoPricing.cargoMethod = objectIds.cargoMethod;
 
     const cargoPricing = await this.cargoPricingModel.create(newCargoPricing);
     await cargoPricing.validate();
