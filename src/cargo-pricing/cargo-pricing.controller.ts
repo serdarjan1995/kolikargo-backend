@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   HttpStatus,
@@ -16,6 +17,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiQuery,
   ApiTags,
@@ -132,5 +134,22 @@ export class CargoPricingController {
         );
       }
     }
+  }
+
+  @Delete(':id')
+  @Roles(Role.Supplier, Role.Admin)
+  @ApiOkResponse({
+    description: 'Successful Response',
+  })
+  @ApiNotFoundResponse({
+    description: 'Not found response',
+  })
+  public async deleteCargoPricing(@Request() req, @Param('id') id: string) {
+    const cargoPricing = await this.cargoPricingService.getCargoPricing(id);
+    await this.checkSupplierAssociatedWithUser(
+      cargoPricing.supplier.id,
+      req.user,
+    );
+    return this.cargoPricingService.deleteCargoPricing(id);
   }
 }
