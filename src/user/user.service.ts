@@ -137,7 +137,7 @@ export class UserService {
         phoneNumber: phoneNumber,
       };
 
-      if (process.env.NODE_ENV === 'prod') {
+      if (process.env.NODE_ENV === 'production') {
         await this.sendSMS(phoneNumber, newCode);
       }
 
@@ -175,7 +175,7 @@ export class UserService {
   }
 
   generateCode(length: number): number {
-    if (process.env.NODE_ENV !== 'prod') {
+    if (process.env.NODE_ENV !== 'production') {
       return 488257;
     }
     let result = '';
