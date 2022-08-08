@@ -4,9 +4,11 @@ import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { UserSchema } from './schemas/user.schema';
 import { AuthCodeSchema } from './schemas/authCode.schema';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
+    HttpModule,
     MongooseModule.forFeature([
       {
         name: 'User',

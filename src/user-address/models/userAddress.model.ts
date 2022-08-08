@@ -24,6 +24,13 @@ export class UserAddressModel {
 
   @IsNotEmpty()
   @IsString()
+  @ApiProperty({
+    description: 'Address name',
+  })
+  readonly name: string;
+
+  @IsNotEmpty()
+  @IsString()
   @IsEnum(AddressType)
   @ApiProperty({
     description: 'Address type',

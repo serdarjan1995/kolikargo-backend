@@ -14,6 +14,9 @@ export class UserAddress extends Document {
   id: string;
 
   @Prop({ required: true })
+  name: string;
+
+  @Prop({ required: true })
   type: string;
 
   @Prop({ required: true })

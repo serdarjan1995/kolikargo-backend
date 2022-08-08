@@ -77,6 +77,7 @@ export class AuthController {
         HttpStatus.BAD_REQUEST,
       );
     }
+    this.checkNumber(reqCode.phoneNumber);
 
     const authCode = await this.userService.refreshCode(reqCode.phoneNumber);
     if (!authCode) {
@@ -99,6 +100,8 @@ export class AuthController {
     },
   })
   public async register(@Body() req: UserRegister) {
+    this.checkNumber(req.phoneNumber);
+
     const user = await this.userService.getUserBy(
       { phoneNumber: req.phoneNumber },
       false,
@@ -114,6 +117,16 @@ export class AuthController {
       );
     }
     return { success: true };
+  }
+
+  checkNumber(phoneNumber) {
+    const regex = /^\+905[0-9]{9}$/g;
+    if (!phoneNumber.match(regex)) {
+      throw new HttpException(
+        'Invalid number. Should be +905xxxxxxxxx',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   @UseGuards(JwtAuthGuard)

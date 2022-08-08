@@ -5,12 +5,18 @@ import { UserModel, UserRegister } from './models/user.model';
 import { AuthCodeModel } from './models/authCode.model';
 import { InjectTwilio, TwilioClient } from 'nestjs-twilio';
 import { Role } from '../auth/role.enum';
+import { HttpService } from '@nestjs/axios';
 
 const userProjection = {
   __v: false,
   _id: false,
   roles: false,
 };
+
+const SMS_API_USERID = process.env.SMS_API_USERID;
+const SMS_API_USERNAME = process.env.SMS_API_USERNAME;
+const SMS_API_PASSWORD = process.env.SMS_API_PASSWORD;
+const SMS_API_NUMBER = process.env.SMS_API_NUMBER;
 
 @Injectable()
 export class UserService {
@@ -19,6 +25,7 @@ export class UserService {
     @InjectModel('AuthCode')
     private readonly authCodeModel: Model<AuthCodeModel>,
     @InjectTwilio() private readonly twilioClient: TwilioClient,
+    private readonly httpService: HttpService,
   ) {}
 
   public async getUsers(name): Promise<UserModel[]> {
@@ -129,7 +136,11 @@ export class UserService {
         code: newCode,
         phoneNumber: phoneNumber,
       };
-      // await this.sendSMS(phoneNumber, newCode);
+
+      if (process.env.NODE_ENV === 'prod') {
+        await this.sendSMS(phoneNumber, newCode);
+      }
+
       if (!currentCode) {
         // create a new
         const authCode = await this.authCodeModel.create(newData);
@@ -144,7 +155,7 @@ export class UserService {
     return null;
   }
 
-  async sendSMS(phoneNumber, code) {
+  async sendSMSTwilio(phoneNumber, code) {
     return await this.twilioClient.messages.create({
       body: `Please enter your code: ${code} to continue`,
       from: process.env.TWILIO_NUMBER,
@@ -152,8 +163,21 @@ export class UserService {
     });
   }
 
+  async sendSMS(phoneNumber, code) {
+    const message = encodeURI(
+      `${code} dogrulama kodu ile giriş yapabilirsiniz. \n\nKolikargo`,
+    );
+    const url =
+      `http://panel.vatansms.com/panel/smsgonder1N.php?kno=${SMS_API_USERID}&kul_ad=${SMS_API_USERNAME}&` +
+      `sifre=${SMS_API_PASSWORD}&gonderen=${SMS_API_NUMBER}&mesaj=${message}&numaralar=${phoneNumber}&tur=Normal`;
+
+    return this.httpService.axiosRef.get(url);
+  }
+
   generateCode(length: number): number {
-    return 488257;
+    if (process.env.NODE_ENV !== 'prod') {
+      return 488257;
+    }
     let result = '';
     const characters = '0123456789';
     const charactersLength = characters.length;
