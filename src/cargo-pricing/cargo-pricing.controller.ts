@@ -63,7 +63,7 @@ export class CargoPricingController {
         supplierId,
       );
     }
-    return await this.cargoPricingService.filterCargoPricing({ filter });
+    return await this.cargoPricingService.filterCargoPricing(filter);
   }
 
   @Post()
