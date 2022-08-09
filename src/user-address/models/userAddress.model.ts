@@ -22,9 +22,9 @@ export class UserAddressModel {
   })
   readonly id: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Address name',
   })
   readonly name: string;

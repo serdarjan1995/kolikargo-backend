@@ -13,7 +13,7 @@ export class UserAddress extends Document {
   })
   id: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   name: string;
 
   @Prop({ required: true })

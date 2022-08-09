@@ -2,10 +2,13 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
+  AddressType,
   CreateUserAddressModel,
   UserAddressModel,
 } from './models/userAddress.model';
 import { UserService } from '../user/user.service';
+import { AdministrativeAreaService } from './administrative-area.service';
+import { CATEGORY } from './models/administrativeArea.model';
 
 const userAddressModelProjection = {
   _id: false,
@@ -19,6 +22,7 @@ export class UserAddressService {
     @InjectModel('UserAddress')
     private readonly userAddressModel: Model<UserAddressModel>,
     private readonly userService: UserService,
+    private readonly administrativeAreaService: AdministrativeAreaService,
   ) {}
 
   public async listUserAddresses(
@@ -42,10 +46,70 @@ export class UserAddressService {
       await this.removeDefaultFlagsFromUserAddress(newUserAddress.type, user);
     }
 
+    await this.validateAddressAdministrativeArea(newUserAddress);
+
     const userAddress = await this.userAddressModel.create(newUserAddress);
     await userAddress.validate();
     await userAddress.save();
     return this.getUserAddress(userAddress.id, userId);
+  }
+
+  public async validateAddressAdministrativeArea(userAddress) {
+    // validate country
+    const country = await this.administrativeAreaService.findOne({
+      category: CATEGORY.COUNTRY,
+      country: userAddress.country,
+    });
+    if (!country) {
+      throw new HttpException(
+        `Country ${userAddress.country} Not Found`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    // validate province
+    const province = await this.administrativeAreaService.findOne({
+      category: CATEGORY.PROVINCE,
+      name: userAddress.province,
+      parent: userAddress.country,
+      parentCategory: CATEGORY.COUNTRY,
+    });
+    if (!province) {
+      throw new HttpException(
+        `Province ${userAddress.country} Not Found`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    if (userAddress.type == AddressType.SENDER) {
+      // validate city
+      const city = await this.administrativeAreaService.findOne({
+        category: CATEGORY.CITY,
+        name: userAddress.city,
+        parent: userAddress.province,
+        parentCategory: CATEGORY.PROVINCE,
+      });
+      if (!city) {
+        throw new HttpException(
+          `City ${userAddress.city} Not Found`,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      // validate district
+      const district = await this.administrativeAreaService.findOne({
+        category: CATEGORY.DISTRICT,
+        name: userAddress.district,
+        parent: userAddress.city,
+        parentCategory: CATEGORY.CITY,
+      });
+      if (!district) {
+        throw new HttpException(
+          `District ${userAddress.district} Not Found`,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+    }
   }
 
   public async getUserAddress(id, userId): Promise<UserAddressModel> {
