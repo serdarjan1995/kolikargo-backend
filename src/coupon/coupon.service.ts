@@ -101,27 +101,40 @@ export class CouponService {
   }
 
   public async validateCoupon(coupon: ValidateCouponModel): Promise<any> {
+    // find universal coupon and check validity
+    const universalCoupons = await this.getCoupons({
+      type: CouponType.UNIVERSAL,
+      code: coupon.code,
+    });
+    if (universalCoupons.length) {
+      const validCoupon: CouponModel = universalCoupons[0];
+      if (validCoupon.expires && validCoupon.expires < new Date()) {
+        throw new HttpException('Coupon expired', HttpStatus.NOT_FOUND);
+      }
+      return validCoupon;
+    }
+
+    // find company coupon and check validity
     const filter = {
       ...coupon,
-      expires: {
-        $gte: new Date(),
-      },
     };
     if (filter?.supplier) {
       filter.supplier = await this.cargoSupplierService.idToObjectId(
         filter.supplier,
       );
     }
-    const coupons = await this.getCoupons(filter);
-    if (!coupons.length) {
-      throw new HttpException('Coupon Not Found', HttpStatus.NOT_FOUND);
+    const companyCoupons = await this.getCoupons(filter);
+    if (companyCoupons.length) {
+      const validCoupon: CouponModel = companyCoupons[0];
+      if (
+        (validCoupon.supplier &&
+          validCoupon.supplier?.id !== coupon.supplier) ||
+        (validCoupon.expires && validCoupon.expires < new Date())
+      ) {
+        throw new HttpException('Coupon Not Found', HttpStatus.NOT_FOUND);
+      }
+      return validCoupon;
     }
-
-    const validCoupon: CouponModel = coupons[0];
-    if (validCoupon.supplier && validCoupon.supplier?.id !== coupon.supplier) {
-      throw new HttpException('Coupon Not Found', HttpStatus.NOT_FOUND);
-    }
-
-    return validCoupon;
+    throw new HttpException('Coupon Not Found', HttpStatus.NOT_FOUND);
   }
 }
