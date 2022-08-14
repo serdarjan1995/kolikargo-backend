@@ -15,17 +15,15 @@ export class CargoPricing extends Document {
 
   @Prop({
     required: true,
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'CargoType',
+    type: String,
   })
-  cargoType: Types.ObjectId;
+  cargoType: string;
 
   @Prop({
     required: true,
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'CargoMethod',
+    type: String,
   })
-  cargoMethod: Types.ObjectId;
+  cargoMethod: string;
 
   @Prop({
     required: true,

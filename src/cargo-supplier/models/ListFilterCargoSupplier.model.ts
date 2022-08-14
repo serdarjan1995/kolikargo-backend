@@ -1,5 +1,5 @@
 import {
-  IsBoolean,
+  IsBoolean, IsEnum,
   IsNumber,
   IsOptional,
   IsString,
@@ -7,6 +7,7 @@ import {
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
+import { CARGO_TYPES } from '../../cargo-pricing/models/cargoPricing.model';
 
 export class ListFilterCargoSupplierModel {
   @IsString()
@@ -61,13 +62,13 @@ export class ListFilterCargoSupplierModel {
   })
   destinationLocation: string;
 
-  @IsUUID()
+  @IsString()
+  @IsEnum(CARGO_TYPES)
   @IsOptional()
   @ApiPropertyOptional({
-    description:
-      'Cargo Type id to filter if supplier is providing service to send specific cargo type. ' +
-      'Get valid cargo type ids from `/cargo-type` endpoint',
-    example: '986dcaf4-c1ea-4218-b6b4-e4fd95a3c28e',
+    description: 'Cargo Type',
+    enum: CARGO_TYPES,
+    example: CARGO_TYPES.FURNITURE,
   })
   cargoType: string;
 }

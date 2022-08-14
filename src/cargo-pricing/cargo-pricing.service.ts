@@ -6,8 +6,6 @@ import {
   CargoPricingModel,
   CreateCargoPricingModel,
 } from './models/cargoPricing.model';
-import { CargoMethodService } from '../cargo-method/cargo-method.service';
-import { CargoTypeService } from '../cargo-type/cargo-type.service';
 
 const CargoPricingModelProjection = {
   _id: false,
@@ -20,19 +18,9 @@ export class CargoPricingService {
     @InjectModel('CargoPricing')
     private readonly cargoPricingModel: Model<CargoPricingModel>,
     private readonly cargoSupplierService: CargoSupplierService,
-    private readonly cargoMethodService: CargoMethodService,
-    private readonly cargoTypeService: CargoTypeService,
   ) {}
 
   public populateFields = [
-    {
-      path: 'cargoMethod',
-      select: 'id name description',
-    },
-    {
-      path: 'cargoType',
-      select: 'id name description',
-    },
     {
       path: 'supplier',
       select: 'id name description avatarUrl',
@@ -51,15 +39,11 @@ export class CargoPricingService {
   public async createCargoPricing(
     newCargoPricing: CreateCargoPricingModel,
   ): Promise<CargoPricingModel> {
-    const objectIds = await this.checkExistingCargoPricing(
+    newCargoPricing.supplier = await this.checkExistingCargoPricing(
       newCargoPricing.supplier,
       newCargoPricing.cargoMethod,
       newCargoPricing.cargoType,
     );
-
-    newCargoPricing.supplier = objectIds.supplier;
-    newCargoPricing.cargoType = objectIds.cargoType;
-    newCargoPricing.cargoMethod = objectIds.cargoMethod;
 
     const cargoPricing = await this.cargoPricingModel.create(newCargoPricing);
     await cargoPricing.validate();
@@ -78,25 +62,20 @@ export class CargoPricingService {
     return cargoPricing;
   }
 
+  /*** returns cargo-supplier ObjectId if valid ***/
   public async checkExistingCargoPricing(
     supplierId: string,
-    cargoMethodId: string,
-    cargoTypeId: string,
+    cargoMethod: string,
+    cargoType: string,
     exceptId: any = null,
   ) {
     const cargoSupplierObjectId = await this.cargoSupplierService.idToObjectId(
       supplierId,
     );
-    const cargoMethodObjectId = await this.cargoMethodService.idToObjectId(
-      cargoMethodId,
-    );
-    const cargoTypeObjectId = await this.cargoTypeService.idToObjectId(
-      cargoTypeId,
-    );
 
     const filter = {
-      cargoMethod: cargoMethodObjectId,
-      cargoType: cargoTypeObjectId,
+      cargoMethod: cargoMethod,
+      cargoType: cargoType,
       supplier: cargoSupplierObjectId,
     };
 
@@ -110,27 +89,23 @@ export class CargoPricingService {
 
     if (existingCargoPricing.length) {
       throw new HttpException(
-        `The pricing for cargo method ${cargoMethodId} with ${cargoTypeId} already exists, please check entries`,
+        `The pricing for cargo method ${cargoMethod} with ${cargoType} already exists, please check entries`,
         HttpStatus.BAD_REQUEST,
       );
     }
-    return filter;
+    return cargoSupplierObjectId;
   }
 
   public async updateCargoPricing(
     id: string,
     updateParams: CreateCargoPricingModel,
   ): Promise<CargoPricingModel> {
-    const objectIds = await this.checkExistingCargoPricing(
+    updateParams.supplier = await this.checkExistingCargoPricing(
       updateParams.supplier,
       updateParams.cargoMethod,
       updateParams.cargoType,
       id,
     );
-
-    updateParams.cargoMethod = objectIds.cargoMethod;
-    updateParams.cargoType = objectIds.cargoType;
-    updateParams.supplier = objectIds.supplier;
 
     const cargoPricing = await this.cargoPricingModel
       .findOneAndUpdate({ id: id }, updateParams)

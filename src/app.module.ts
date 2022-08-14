@@ -8,8 +8,6 @@ import { TwilioModule } from 'nestjs-twilio';
 import { AuthModule } from './auth/auth.module';
 import { CargoSupplierModule } from './cargo-supplier/cargo-supplier.module';
 import { LocationModule } from './location/location.module';
-import { CargoTypeModule } from './cargo-type/cargo-type.module';
-import { CargoMethodModule } from './cargo-method/cargo-method.module';
 import { UserAddressModule } from './user-address/user-address.module';
 import { CouponModule } from './coupon/coupon.module';
 import { CargoPricingModule } from './cargo-pricing/cargo-pricing.module';
@@ -34,8 +32,6 @@ const MONGO_CONNECTION_STR =
     AuthModule,
     CargoSupplierModule,
     LocationModule,
-    CargoTypeModule,
-    CargoMethodModule,
     UserAddressModule,
     CouponModule,
     CargoPricingModule,

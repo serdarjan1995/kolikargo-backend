@@ -8,10 +8,6 @@ import { UserModule } from '../user/user.module';
 import { LocationModule } from '../location/location.module';
 import { CargoSupplierService } from '../cargo-supplier/cargo-supplier.service';
 import { CargoPricingSchema } from './schemas/cargoPricing.schema';
-import { CargoMethodService } from '../cargo-method/cargo-method.service';
-import { CargoTypeService } from '../cargo-type/cargo-type.service';
-import { CargoMethodSchema } from '../cargo-method/schemas/cargoMethod.schema';
-import { CargoTypeSchema } from '../cargo-type/schemas/cargoType.schema';
 
 @Module({
   imports: [
@@ -24,26 +20,13 @@ import { CargoTypeSchema } from '../cargo-type/schemas/cargoType.schema';
         name: 'CargoSupplier',
         schema: CargoSupplierSchema,
       },
-      {
-        name: 'CargoMethod',
-        schema: CargoMethodSchema,
-      },
-      {
-        name: 'CargoType',
-        schema: CargoTypeSchema,
-      },
     ]),
     CargoSupplierModule,
     UserModule,
     LocationModule,
   ],
   controllers: [CargoPricingController],
-  providers: [
-    CargoSupplierService,
-    CargoMethodService,
-    CargoTypeService,
-    CargoPricingService,
-  ],
+  providers: [CargoSupplierService, CargoPricingService],
   exports: [CargoPricingService],
 })
 export class CargoPricingModule {}
