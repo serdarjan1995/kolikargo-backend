@@ -13,7 +13,7 @@ import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './local-auth.guard';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import {
-  RequestCode,
+  RequestCode, UpdateUserProfileModel,
   UserLogin,
   UserModel,
   UserRegister,
@@ -138,5 +138,20 @@ export class AuthController {
   })
   getProfile(@Request() req) {
     return this.userService.getUserBy({ id: req.user.userId });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('profile')
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: UserModel,
+  })
+  updateProfile(@Request() req, @Body() updateParams: UpdateUserProfileModel) {
+    return this.userService.updateUser(
+      req.user.userId,
+      updateParams.name,
+      updateParams.surname,
+    );
   }
 }

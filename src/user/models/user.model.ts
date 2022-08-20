@@ -6,7 +6,7 @@ import {
   IsString,
 } from 'class-validator';
 import { Role } from '../../auth/role.enum';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 
 export class UserModel {
   @IsOptional()
@@ -38,6 +38,11 @@ export class UserModel {
 
   readonly roles: Role[];
 }
+
+export class UpdateUserProfileModel extends PickType(UserModel, [
+  'name',
+  'surname',
+] as const) {}
 
 export class UserLogin {
   @IsNotEmpty()

@@ -85,14 +85,14 @@ export class UserService {
   public async updateUser(userId, name, surname): Promise<UserModel> {
     const user = await this.userModel
       .findOneAndUpdate(
-        { id: await this.idToObjectId(userId) },
+        { _id: await this.idToObjectId(userId) },
         { name, surname },
       )
       .exec();
     if (!user) {
       throw new HttpException('User Not Found', HttpStatus.NOT_FOUND);
     }
-    return user;
+    return this.getUser(user._id);
   }
 
   async getAuthCode(phoneNumber: string): Promise<any> {
