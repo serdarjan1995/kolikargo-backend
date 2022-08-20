@@ -6,8 +6,6 @@ import { CouponSchema } from './schemas/coupon.schema';
 import { CargoSupplierSchema } from '../cargo-supplier/schemas/cargoSupplier.schema';
 import { CargoSupplierService } from '../cargo-supplier/cargo-supplier.service';
 import { CargoSupplierModule } from '../cargo-supplier/cargo-supplier.module';
-import { LocationService } from '../location/location.service';
-import { UserService } from '../user/user.service';
 import { UserModule } from '../user/user.module';
 import { LocationSchema } from '../location/schemas/location.schema';
 import { UserSchema } from '../user/schemas/user.schema';

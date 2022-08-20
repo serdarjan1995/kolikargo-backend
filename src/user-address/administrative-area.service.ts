@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { AdministrativeAreaModel, CATEGORY } from './models/administrativeArea.model';
+import {
+  AdministrativeAreaModel,
+  CATEGORY,
+} from './models/administrativeArea.model';
 
 const administrativeAreaProjection = {
   _id: false,
@@ -72,6 +75,7 @@ export class AdministrativeAreaService {
 
   public async findOne(filter: object): Promise<AdministrativeAreaModel> {
     return await this.administrativeAreaModel
-      .findOne(filter, administrativeAreaProjection).exec();
+      .findOne(filter, administrativeAreaProjection)
+      .exec();
   }
 }

@@ -59,4 +59,13 @@ export class LocationService {
     }
     return location._id;
   }
+
+  public async populateLocations(locationIds) {
+    const locations: Types.ObjectId[] = [];
+    for (const locationId of locationIds) {
+      const location = await this.idToObjectId(locationId);
+      locations.push(location);
+    }
+    return locations;
+  }
 }

@@ -10,7 +10,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CargoSupplierService } from './cargo-supplier.service';
-import { CargoSupplierModel } from './models/cargoSupplier.model';
+import {
+  CargoSupplierModel,
+  CreateUpdateCargoSupplierModel,
+} from './models/cargoSupplier.model';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -108,7 +111,7 @@ export class CargoSupplierController {
   })
   public createCargoSupplier(
     @Request() req,
-    @Body() cargoSupplier: CargoSupplierModel,
+    @Body() cargoSupplier: CreateUpdateCargoSupplierModel,
   ) {
     return this.cargoSupplierService.createCargoSupplier(cargoSupplier);
   }
@@ -131,7 +134,7 @@ export class CargoSupplierController {
   })
   public async updateCargoSupplier(
     @Param('id') id: string,
-    @Body() cargoSupplier: CargoSupplierModel,
+    @Body() cargoSupplier: CreateUpdateCargoSupplierModel,
   ) {
     return this.cargoSupplierService.updateCargoSupplier(id, cargoSupplier);
   }

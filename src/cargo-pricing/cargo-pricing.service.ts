@@ -1,11 +1,13 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, ObjectId } from 'mongoose';
 import { CargoSupplierService } from '../cargo-supplier/cargo-supplier.service';
 import {
+  CargoPriceFieldModel,
   CargoPricingModel,
   CreateCargoPricingModel,
 } from './models/cargoPricing.model';
+import { LocationService } from '../location/location.service';
 
 const CargoPricingModelProjection = {
   _id: false,
@@ -18,12 +20,17 @@ export class CargoPricingService {
     @InjectModel('CargoPricing')
     private readonly cargoPricingModel: Model<CargoPricingModel>,
     private readonly cargoSupplierService: CargoSupplierService,
+    private readonly locationService: LocationService,
   ) {}
 
   public populateFields = [
     {
       path: 'supplier',
       select: 'id name description avatarUrl',
+    },
+    {
+      path: 'locations',
+      select: 'id country city',
     },
   ];
 
@@ -39,15 +46,25 @@ export class CargoPricingService {
   public async createCargoPricing(
     newCargoPricing: CreateCargoPricingModel,
   ): Promise<CargoPricingModel> {
+    this.validatePriceFields(newCargoPricing.prices);
+
+    newCargoPricing.locations = await this.locationService.populateLocations(
+      newCargoPricing.locations,
+    );
+
     newCargoPricing.supplier = await this.checkExistingCargoPricing(
       newCargoPricing.supplier,
       newCargoPricing.cargoMethod,
-      newCargoPricing.cargoType,
+      newCargoPricing.locations,
     );
 
     const cargoPricing = await this.cargoPricingModel.create(newCargoPricing);
     await cargoPricing.validate();
     await cargoPricing.save();
+
+    await this.updateCargoSupplierDestinationServiceLocations(
+      cargoPricing.supplier,
+    );
     return this.getCargoPricing(cargoPricing.id);
   }
 
@@ -66,7 +83,7 @@ export class CargoPricingService {
   public async checkExistingCargoPricing(
     supplierId: string,
     cargoMethod: string,
-    cargoType: string,
+    locations: any[],
     exceptId: any = null,
   ) {
     const cargoSupplierObjectId = await this.cargoSupplierService.idToObjectId(
@@ -75,7 +92,7 @@ export class CargoPricingService {
 
     const filter = {
       cargoMethod: cargoMethod,
-      cargoType: cargoType,
+      locations: { $in: locations },
       supplier: cargoSupplierObjectId,
     };
 
@@ -89,21 +106,61 @@ export class CargoPricingService {
 
     if (existingCargoPricing.length) {
       throw new HttpException(
-        `The pricing for cargo method ${cargoMethod} with ${cargoType} already exists, please check entries`,
+        `The pricing for cargo method ${cargoMethod} with referenced location already exists, please check entries`,
         HttpStatus.BAD_REQUEST,
       );
     }
     return cargoSupplierObjectId;
   }
 
+  /** validates CargoPriceFields **/
+  public validatePriceFields(prices: CargoPriceFieldModel[]) {
+    const cargoTypes = prices.map((item) => item.cargoType);
+    const uniqueCargoTypesSet = new Set(cargoTypes);
+    if (cargoTypes.length != uniqueCargoTypesSet.size) {
+      throw new HttpException(
+        `Please clear duplicate items in "prices" field`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  public async updateCargoSupplierDestinationServiceLocations(
+    supplierObjectId: ObjectId,
+  ) {
+    const allCargoSupplierPricing = await this.filterCargoPricing({
+      supplier: supplierObjectId,
+    });
+    const allServiceLocations = allCargoSupplierPricing.map(
+      (item) => item.locations,
+    );
+    let locationList = [];
+    allServiceLocations.forEach((item) => {
+      locationList = locationList.concat(item);
+    });
+    let locationIds = locationList.map((item) => item._id);
+    locationIds = new Array(...new Set(locationIds));
+
+    await this.cargoSupplierService.updateCargoSupplierByFilter(
+      { _id: supplierObjectId },
+      { serviceDestinationLocations: locationIds },
+    );
+  }
+
   public async updateCargoPricing(
     id: string,
     updateParams: CreateCargoPricingModel,
   ): Promise<CargoPricingModel> {
+    this.validatePriceFields(updateParams.prices);
+
+    updateParams.locations = await this.locationService.populateLocations(
+      updateParams.locations,
+    );
+
     updateParams.supplier = await this.checkExistingCargoPricing(
       updateParams.supplier,
       updateParams.cargoMethod,
-      updateParams.cargoType,
+      updateParams.locations,
       id,
     );
 
@@ -113,6 +170,11 @@ export class CargoPricingService {
     if (!cargoPricing) {
       throw new HttpException('Cargo Pricing Not Found', HttpStatus.NOT_FOUND);
     }
+
+    await this.updateCargoSupplierDestinationServiceLocations(
+      cargoPricing.supplier,
+    );
+
     return this.getCargoPricing(cargoPricing.id);
   }
 

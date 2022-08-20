@@ -1,7 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { CargoSupplierModel } from './models/cargoSupplier.model';
+import {
+  CargoSupplierModel,
+  CreateUpdateCargoSupplierModel,
+} from './models/cargoSupplier.model';
 import { LocationService } from '../location/location.service';
 import { UserService } from '../user/user.service';
 
@@ -41,7 +44,7 @@ export class CargoSupplierService {
   }
 
   public async createCargoSupplier(
-    newCargoSupplier: CargoSupplierModel,
+    newCargoSupplier: CreateUpdateCargoSupplierModel,
   ): Promise<CargoSupplierModel> {
     const existingCargoSupplier = await this.getCargoSuppliers({
       phoneNumber: newCargoSupplier.phoneNumber,
@@ -52,14 +55,6 @@ export class CargoSupplierService {
         HttpStatus.BAD_REQUEST,
       );
     }
-
-    // find all locations and replace object ids
-    newCargoSupplier.serviceSourceLocations = await this.populateLocations(
-      newCargoSupplier.serviceSourceLocations,
-    );
-    newCargoSupplier.serviceDestinationLocations = await this.populateLocations(
-      newCargoSupplier.serviceDestinationLocations,
-    );
 
     newCargoSupplier.user = await this.userService.idToObjectId(
       newCargoSupplier.user,
@@ -98,17 +93,8 @@ export class CargoSupplierService {
 
   public async updateCargoSupplier(
     id: string,
-    updateParams: any,
+    updateParams: CreateUpdateCargoSupplierModel,
   ): Promise<CargoSupplierModel> {
-    delete updateParams.id;
-    // find all locations and replace object ids
-    updateParams.serviceSourceLocations = await this.populateLocations(
-      updateParams.serviceSourceLocations,
-    );
-    updateParams.serviceDestinationLocations = await this.populateLocations(
-      updateParams.serviceDestinationLocations,
-    );
-
     const cargoSupplier = await this.cargoSupplierModel
       .findOneAndUpdate({ id: id }, updateParams)
       .exec();
@@ -118,13 +104,17 @@ export class CargoSupplierService {
     return this.getCargoSupplier(cargoSupplier.id);
   }
 
-  public async populateLocations(locationIds) {
-    const locations: Types.ObjectId[] = [];
-    for (const locationId of locationIds) {
-      const location = await this.locationService.idToObjectId(locationId);
-      locations.push(location);
+  public async updateCargoSupplierByFilter(
+    findFilter: object,
+    updateParams: object,
+  ): Promise<CargoSupplierModel> {
+    const cargoSupplier = await this.cargoSupplierModel
+      .findOneAndUpdate(findFilter, updateParams)
+      .exec();
+    if (!cargoSupplier) {
+      throw new HttpException('Cargo Supplier Not Found', HttpStatus.NOT_FOUND);
     }
-    return locations;
+    return this.getCargoSupplier(cargoSupplier.id);
   }
 
   public async idToObjectId(id: string): Promise<Types.ObjectId> {

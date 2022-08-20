@@ -13,7 +13,8 @@ import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './local-auth.guard';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import {
-  RequestCode, UpdateUserProfileModel,
+  RequestCode,
+  UpdateUserProfileModel,
   UserLogin,
   UserModel,
   UserRegister,

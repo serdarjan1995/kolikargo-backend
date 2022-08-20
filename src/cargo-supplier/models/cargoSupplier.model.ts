@@ -5,10 +5,18 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
 } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, OmitType } from '@nestjs/swagger';
 
 export class CargoSupplierModel {
+  @IsNotEmpty()
+  @IsUUID()
+  @ApiProperty({
+    description: 'ID of the Cargo Supplier',
+  })
+  readonly id: string;
+
   @IsNotEmpty()
   @IsString()
   @ApiProperty({
@@ -124,3 +132,15 @@ export class CargoSupplierModel {
   })
   serviceDestinationLocations: any[];
 }
+
+export class CreateUpdateCargoSupplierModel extends OmitType(
+  CargoSupplierModel,
+  [
+    'id',
+    'stars',
+    'reviewsCount',
+    'reviews',
+    'serviceSourceLocations',
+    'serviceDestinationLocations',
+  ] as const,
+) {}
