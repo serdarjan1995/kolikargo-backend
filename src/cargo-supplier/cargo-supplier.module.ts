@@ -3,12 +3,9 @@ import { CargoSupplierController } from './cargo-supplier.controller';
 import { CargoSupplierService } from './cargo-supplier.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CargoSupplierSchema } from './schemas/cargoSupplier.schema';
-import { LocationService } from '../location/location.service';
 import { LocationModule } from '../location/location.module';
-import { LocationSchema } from '../location/schemas/location.schema';
 import { UserModule } from '../user/user.module';
-import { CargoPricingService } from '../cargo-pricing/cargo-pricing.service';
-import { CargoPricingSchema } from '../cargo-pricing/schemas/cargoPricing.schema';
+import { CargoPricingModule } from '../cargo-pricing/cargo-pricing.module';
 
 @Module({
   imports: [
@@ -17,20 +14,13 @@ import { CargoPricingSchema } from '../cargo-pricing/schemas/cargoPricing.schema
         name: 'CargoSupplier',
         schema: CargoSupplierSchema,
       },
-      {
-        name: 'Location',
-        schema: LocationSchema,
-      },
-      {
-        name: 'CargoPricing',
-        schema: CargoPricingSchema,
-      },
     ]),
     LocationModule,
     UserModule,
+    CargoPricingModule,
   ],
   controllers: [CargoSupplierController],
-  providers: [LocationService, CargoPricingService, CargoSupplierService],
+  providers: [CargoSupplierService],
   exports: [CargoSupplierService],
 })
 export class CargoSupplierModule {}

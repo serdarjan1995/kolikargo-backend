@@ -37,3 +37,5 @@ lerna-debug.log*
 .env
 
 Kolikargo api.postman_collection.json
+.mongoconfig
+.mongodata

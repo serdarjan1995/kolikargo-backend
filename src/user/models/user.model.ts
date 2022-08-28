@@ -7,8 +7,11 @@ import {
 } from 'class-validator';
 import { Role } from '../../auth/role.enum';
 import { ApiProperty, PickType } from '@nestjs/swagger';
+import { Types } from 'mongoose';
 
 export class UserModel {
+  readonly _id: Types.ObjectId;
+
   @IsOptional()
   @ApiProperty({
     description: 'ID of the user',

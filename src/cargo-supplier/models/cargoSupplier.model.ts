@@ -8,8 +8,11 @@ import {
   IsUUID,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional, OmitType } from '@nestjs/swagger';
+import { Types } from 'mongoose';
 
 export class CargoSupplierModel {
+  readonly _id: Types.ObjectId;
+
   @IsNotEmpty()
   @IsUUID()
   @ApiProperty({

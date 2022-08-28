@@ -64,3 +64,42 @@ export class UserAddress extends Document {
 }
 
 export const UserAddressSchema = SchemaFactory.createForClass(UserAddress);
+
+@Schema()
+export class UserAddressDetail extends Document {
+  @Prop({ required: true })
+  contactName: string;
+
+  @Prop({ required: true })
+  contactSurname: string;
+
+  @Prop({ required: true })
+  contactPhoneNumber: string;
+
+  @Prop({ required: false })
+  country: string;
+
+  @Prop({ required: false })
+  province: string;
+
+  @Prop({ required: false })
+  city: string;
+
+  @Prop({ required: false })
+  district: string;
+
+  @Prop({ required: false })
+  houseNo: string;
+
+  @Prop({ required: false })
+  floorNo: string;
+
+  @Prop({ required: false })
+  doorNo: string;
+
+  @Prop({ required: false })
+  addressLine: string;
+}
+
+export const UserAddressDetailSchema =
+  SchemaFactory.createForClass(UserAddressDetail);

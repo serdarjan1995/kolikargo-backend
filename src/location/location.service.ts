@@ -33,7 +33,14 @@ export class LocationService {
       .findOne({ id: id }, locationProjection)
       .exec();
     if (!location) {
-      throw new HttpException('Location Not Found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'Location Not Found',
+          errorCode: 'location_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
     return location;
   }
@@ -47,7 +54,14 @@ export class LocationService {
       .findOneAndUpdate({ id: id }, updateParams)
       .exec();
     if (!location) {
-      throw new HttpException('Location Not Found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'Location Not Found',
+          errorCode: 'location_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
     return this.getLocation(location.id);
   }
@@ -55,7 +69,14 @@ export class LocationService {
   public async idToObjectId(id: string): Promise<Types.ObjectId> {
     const location = await this.locationModel.findOne({ id: id }).exec();
     if (!location) {
-      throw new HttpException(`Location ${id} Not Found`, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `Location ${id} Not Found`,
+          errorCode: 'location_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
     return location._id;
   }

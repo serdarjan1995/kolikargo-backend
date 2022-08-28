@@ -51,7 +51,11 @@ export class CargoSupplierService {
     });
     if (existingCargoSupplier.length) {
       throw new HttpException(
-        'Company phone number already registered',
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: `Company phone number already registered`,
+          errorCode: 'company_phone_number_already_used',
+        },
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -68,13 +72,23 @@ export class CargoSupplierService {
     return this.getCargoSupplier(cargoSupplier.id);
   }
 
-  public async getCargoSupplier(id): Promise<CargoSupplierModel> {
+  public async getCargoSupplier(
+    id,
+    noProjection = false,
+  ): Promise<CargoSupplierModel> {
     const cargoSupplier = await this.cargoSupplierModel
-      .findOne({ id: id }, cargoSupplierModelProjection)
+      .findOne({ id: id }, noProjection ? null : cargoSupplierModelProjection)
       .populate(this.populateFields)
       .exec();
     if (!cargoSupplier) {
-      throw new HttpException('Cargo Supplier Not Found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'Cargo Supplier Not Found',
+          errorCode: 'cargo_supplier_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
     return cargoSupplier;
   }
@@ -86,7 +100,14 @@ export class CargoSupplierService {
       .populate(this.populateFields)
       .exec();
     if (!cargoSupplier) {
-      throw new HttpException('Cargo Supplier Not Found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'Cargo Supplier Not Found',
+          errorCode: 'cargo_supplier_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
     return cargoSupplier;
   }
@@ -99,7 +120,14 @@ export class CargoSupplierService {
       .findOneAndUpdate({ id: id }, updateParams)
       .exec();
     if (!cargoSupplier) {
-      throw new HttpException('Cargo Supplier Not Found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'Cargo Supplier Not Found',
+          errorCode: 'cargo_supplier_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
     return this.getCargoSupplier(cargoSupplier.id);
   }
@@ -112,7 +140,14 @@ export class CargoSupplierService {
       .findOneAndUpdate(findFilter, updateParams)
       .exec();
     if (!cargoSupplier) {
-      throw new HttpException('Cargo Supplier Not Found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'Cargo Supplier Not Found',
+          errorCode: 'cargo_supplier_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
     return this.getCargoSupplier(cargoSupplier.id);
   }
@@ -120,8 +155,12 @@ export class CargoSupplierService {
   public async idToObjectId(id: string): Promise<Types.ObjectId> {
     if (!id) {
       throw new HttpException(
-        `CargoSupplier id should be specified`,
-        HttpStatus.BAD_REQUEST,
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'Cargo Supplier id should be specified',
+          errorCode: 'cargo_supplier_id_not_specified',
+        },
+        HttpStatus.NOT_FOUND,
       );
     }
     const cargoSupplier = await this.cargoSupplierModel
@@ -129,7 +168,11 @@ export class CargoSupplierService {
       .exec();
     if (!cargoSupplier) {
       throw new HttpException(
-        `CargoSupplier ${id} Not Found`,
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'Cargo Supplier Not Found',
+          errorCode: 'cargo_supplier_not_found',
+        },
         HttpStatus.NOT_FOUND,
       );
     }

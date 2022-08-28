@@ -49,7 +49,11 @@ export class AdministrativeAreaController {
       case CATEGORY.PROVINCE:
         if (!query.country) {
           throw new HttpException(
-            'country filter is required',
+            {
+              statusCode: HttpStatus.BAD_REQUEST,
+              message: 'country filter is required',
+              errorCode: 'country_field_missing',
+            },
             HttpStatus.BAD_REQUEST,
           );
         }
@@ -60,7 +64,11 @@ export class AdministrativeAreaController {
       case CATEGORY.CITY:
         if (!query.country || !query.parentName) {
           throw new HttpException(
-            'parentName and country filters are required',
+            {
+              statusCode: HttpStatus.BAD_REQUEST,
+              message: 'parentName and country filters are required',
+              errorCode: 'parent_name_and_country_field_missing',
+            },
             HttpStatus.BAD_REQUEST,
           );
         }
@@ -72,7 +80,11 @@ export class AdministrativeAreaController {
       case CATEGORY.DISTRICT:
         if (!query.country || !query.parentName) {
           throw new HttpException(
-            'parentName and country filters are required',
+            {
+              statusCode: HttpStatus.BAD_REQUEST,
+              message: 'parentName and country filters are required',
+              errorCode: 'parent_name_and_country_field_missing',
+            },
             HttpStatus.BAD_REQUEST,
           );
         }
@@ -82,7 +94,14 @@ export class AdministrativeAreaController {
         );
 
       default:
-        throw new HttpException('unknown category', HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.BAD_REQUEST,
+            message: 'Unknown category',
+            errorCode: 'unknown_category',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
     }
   }
 }

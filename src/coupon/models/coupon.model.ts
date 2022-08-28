@@ -15,18 +15,21 @@ import {
   OmitType,
   PickType,
 } from '@nestjs/swagger';
+import { Types } from 'mongoose';
 
-export enum CouponType {
+export enum COUPON_TYPES {
   UNIVERSAL = 'universal',
   COMPANY = 'company',
 }
 
-export enum CouponDiscountType {
+export enum COUPON_DISCOUNT_TYPES {
   PERCENTAGE = 'percentage',
   FIXED = 'fixed',
 }
 
 export class CouponModel {
+  readonly _id: Types.ObjectId;
+
   @IsOptional()
   @IsUUID()
   @ApiPropertyOptional({
@@ -57,21 +60,21 @@ export class CouponModel {
 
   @IsString()
   @IsNotEmpty()
-  @IsEnum(CouponType)
+  @IsEnum(COUPON_TYPES)
   @ApiProperty({
     description: 'Coupon type',
-    enum: CouponType,
-    example: CouponType.UNIVERSAL,
+    enum: COUPON_TYPES,
+    example: COUPON_TYPES.UNIVERSAL,
   })
   readonly type: string;
 
   @IsString()
   @IsNotEmpty()
-  @IsEnum(CouponDiscountType)
+  @IsEnum(COUPON_DISCOUNT_TYPES)
   @ApiProperty({
     description: 'Coupon discount type',
-    enum: CouponDiscountType,
-    example: CouponDiscountType.FIXED,
+    enum: COUPON_DISCOUNT_TYPES,
+    example: COUPON_DISCOUNT_TYPES.FIXED,
   })
   readonly discountType: string;
 
@@ -99,7 +102,7 @@ export class CouponModel {
   })
   readonly expires: Date;
 
-  @ValidateIf((o) => o.type === CouponType.COMPANY)
+  @ValidateIf((o) => o.type === COUPON_TYPES.COMPANY)
   @IsString()
   @ApiPropertyOptional({
     description: 'Supplier ID if coupon type is COMPANY',

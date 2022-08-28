@@ -74,7 +74,11 @@ export class AuthController {
   public async requestCode(@Body() reqCode: RequestCode) {
     if (!reqCode.phoneNumber) {
       throw new HttpException(
-        'Please provide phoneNumber field',
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: 'Please provide phoneNumber field',
+          errorCode: 'phone_number_missing',
+        },
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -83,7 +87,11 @@ export class AuthController {
     const authCode = await this.userService.refreshCode(reqCode.phoneNumber);
     if (!authCode) {
       throw new HttpException(
-        'Please wait until previous code expires',
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: 'Please wait until previous code expires',
+          errorCode: 'login_code_request_throttled',
+        },
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -113,7 +121,11 @@ export class AuthController {
     const authCode = await this.userService.refreshCode(req.phoneNumber);
     if (!authCode) {
       throw new HttpException(
-        'Please wait until previous code expires',
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: 'Please wait until previous code expires',
+          errorCode: 'login_code_request_throttled',
+        },
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -124,7 +136,11 @@ export class AuthController {
     const regex = /^\+905[0-9]{9}$/g;
     if (!phoneNumber.match(regex)) {
       throw new HttpException(
-        'Invalid number. Should be +905xxxxxxxxx',
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: 'Invalid number. Should be +905xxxxxxxxx',
+          errorCode: 'phone_number_validation_error',
+        },
         HttpStatus.BAD_REQUEST,
       );
     }

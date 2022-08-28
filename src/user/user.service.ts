@@ -45,7 +45,11 @@ export class UserService {
     );
     if (isPhoneNumberRegistered) {
       throw new HttpException(
-        'Phone Number registered',
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: 'Number has been already registered',
+          errorCode: 'number_already_registered',
+        },
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -63,7 +67,14 @@ export class UserService {
       .findOne({ _id: id }, userProjection)
       .exec();
     if (!user) {
-      throw new HttpException('User Not Found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `User ${id} Not Found`,
+          errorCode: 'user_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
     return user;
   }
@@ -77,7 +88,14 @@ export class UserService {
       .findOne(filter, useProjection ? userProjection : null)
       .exec();
     if (!user && raiseException) {
-      throw new HttpException('User Not Found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `User Not Found`,
+          errorCode: 'user_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
     return user;
   }
@@ -90,7 +108,14 @@ export class UserService {
       )
       .exec();
     if (!user) {
-      throw new HttpException('User Not Found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `User Not Found`,
+          errorCode: 'user_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
     return this.getUser(user._id);
   }
@@ -115,12 +140,14 @@ export class UserService {
   async refreshCode(phoneNumber: string): Promise<any> {
     const user = await this.getUserBy({ phoneNumber: phoneNumber });
     if (!user) {
-      if (!user) {
-        throw new HttpException(
-          'Number has not been registered',
-          HttpStatus.NOT_FOUND,
-        );
-      }
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: 'Number has not been registered',
+          errorCode: 'number_not_registered',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     const now = new Date();
@@ -138,7 +165,7 @@ export class UserService {
       };
 
       if (process.env.NODE_ENV === 'production') {
-        await this.sendSMS(phoneNumber, newCode);
+        await this.sendLoginCodeSMS(phoneNumber, newCode);
       }
 
       if (!currentCode) {
@@ -163,15 +190,59 @@ export class UserService {
     });
   }
 
-  async sendSMS(phoneNumber, code) {
-    const message = encodeURI(
-      `${code} dogrulama kodu ile giriş yapabilirsiniz. \n\nKolikargo`,
-    );
+  async sendLoginCodeSMS(phoneNumber, code) {
+    const message = `${code} doğrulama kodu ile giriş yapabilirsiniz.\n\nKolikargo`;
+    return this.sendSMS(phoneNumber, message);
+  }
+
+  async sendSMS(phoneNumber, message) {
+    const encodedMessage = encodeURI(this.encodeSMSSpecialChars(message));
     const url =
       `http://panel.vatansms.com/panel/smsgonder1N.php?kno=${SMS_API_USERID}&kul_ad=${SMS_API_USERNAME}&` +
-      `sifre=${SMS_API_PASSWORD}&gonderen=${SMS_API_NUMBER}&mesaj=${message}&numaralar=${phoneNumber}&tur=Normal`;
-
+      `sifre=${SMS_API_PASSWORD}&gonderen=${SMS_API_NUMBER}&mesaj=${encodedMessage}&numaralar=${phoneNumber}&tur=Normal`;
     return this.httpService.axiosRef.get(url);
+  }
+
+  public encodeSMSSpecialChars(message: string): string {
+    return message
+      .replaceAll('@', '|01|')
+      .replaceAll('£', '|02|')
+      .replaceAll('$', '|03|')
+      .replaceAll('€', '|04|')
+      .replaceAll('_', '|14|')
+      .replaceAll('!', '|26|')
+      .replaceAll("'", '|27|')
+      .replaceAll('#', '|28|')
+      .replaceAll('%', '|30|')
+      .replaceAll('&', '|31|')
+      .replaceAll('(', '|33|')
+      .replaceAll('(', '|34|')
+      .replaceAll('*', '|35|')
+      .replaceAll('+', '|36|')
+      .replaceAll('-', '|38|')
+      .replaceAll(':', '|40|')
+      .replaceAll(';', '|41|')
+      .replaceAll('<', '|42|')
+      .replaceAll('=', '|43|')
+      .replaceAll('>', '|44|')
+      .replaceAll('?', '|45|')
+      .replaceAll('{', '|46|')
+      .replaceAll('}', '|47|')
+      .replaceAll('~', '|49|')
+      .replaceAll('^', '|51|')
+      .replaceAll('ö', '|62|')
+      .replaceAll('ü', '|63|')
+      .replaceAll('ç', '|64|')
+      .replaceAll('ş', '|65|')
+      .replaceAll('ğ', '|66|')
+      .replaceAll('ı', '|67|')
+      .replaceAll('Ö', '|68|')
+      .replaceAll('Ü', '|69|')
+      .replaceAll('Ç', '|70|')
+      .replaceAll('Ş', '|71|')
+      .replaceAll('İ', '|72|')
+      .replaceAll('Ğ', '|73|')
+      .replaceAll('\n', '|61|');
   }
 
   generateCode(length: number): number {
@@ -190,13 +261,24 @@ export class UserService {
   public async idToObjectId(id: string): Promise<Types.ObjectId> {
     if (!id) {
       throw new HttpException(
-        `User id should be specified`,
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: `User id should be specified`,
+          errorCode: 'user_not_found',
+        },
         HttpStatus.BAD_REQUEST,
       );
     }
     const user = await this.userModel.findOne({ id: id }).exec();
     if (!user) {
-      throw new HttpException(`User ${id} Not Found`, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `User ${id} Not Found`,
+          errorCode: 'user_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
     return user._id;
   }

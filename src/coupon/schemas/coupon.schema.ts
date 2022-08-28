@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 import { v4 as uuidV4 } from 'uuid';
-import { CouponDiscountType, CouponType } from '../models/coupon.model';
+import { COUPON_DISCOUNT_TYPES, COUPON_TYPES } from '../models/coupon.model';
 
 @Schema()
 export class Coupon extends Document {
@@ -23,10 +23,10 @@ export class Coupon extends Document {
   @Prop({ required: true })
   code: string;
 
-  @Prop({ required: true, default: CouponType.UNIVERSAL })
+  @Prop({ required: true, default: COUPON_TYPES.UNIVERSAL })
   type: string;
 
-  @Prop({ required: true, default: CouponDiscountType.FIXED })
+  @Prop({ required: true, default: COUPON_DISCOUNT_TYPES.FIXED })
   discountType: string;
 
   @Prop({ required: true })

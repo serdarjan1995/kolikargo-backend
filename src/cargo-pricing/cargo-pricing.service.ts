@@ -43,6 +43,27 @@ export class CargoPricingService {
       .exec();
   }
 
+  public async filterOneCargoPricing(
+    filter: object,
+    noProjection = false,
+  ): Promise<CargoPricingModel> {
+    const cargoPricing = await this.cargoPricingModel
+      .findOne(filter, noProjection ? null : CargoPricingModelProjection)
+      .populate(this.populateFields)
+      .exec();
+    if (!cargoPricing) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'Cargo Pricing Not Found',
+          errorCode: 'cargo_pricing_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return cargoPricing;
+  }
+
   public async createCargoPricing(
     newCargoPricing: CreateCargoPricingModel,
   ): Promise<CargoPricingModel> {
@@ -74,7 +95,14 @@ export class CargoPricingService {
       .populate(this.populateFields)
       .exec();
     if (!cargoPricing) {
-      throw new HttpException('Cargo Pricing Not Found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'Cargo Pricing Not Found',
+          errorCode: 'cargo_pricing_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
     return cargoPricing;
   }
@@ -106,7 +134,11 @@ export class CargoPricingService {
 
     if (existingCargoPricing.length) {
       throw new HttpException(
-        `The pricing for cargo method ${cargoMethod} with referenced location already exists, please check entries`,
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: `The pricing for cargo method ${cargoMethod} with referenced location already exists, please check entries`,
+          errorCode: 'cargo_pricing_for_cargo_method_exists',
+        },
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -119,7 +151,11 @@ export class CargoPricingService {
     const uniqueCargoTypesSet = new Set(cargoTypes);
     if (cargoTypes.length != uniqueCargoTypesSet.size) {
       throw new HttpException(
-        `Please clear duplicate items in "prices" field`,
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: `Please clear duplicate items in "prices" field`,
+          errorCode: 'cargo_pricing_duplicate_price_validation_error',
+        },
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -168,7 +204,14 @@ export class CargoPricingService {
       .findOneAndUpdate({ id: id }, updateParams)
       .exec();
     if (!cargoPricing) {
-      throw new HttpException('Cargo Pricing Not Found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'Cargo Pricing Not Found',
+          errorCode: 'cargo_pricing_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
 
     await this.updateCargoSupplierDestinationServiceLocations(
@@ -181,7 +224,14 @@ export class CargoPricingService {
   public async deleteCargoPricing(id): Promise<any> {
     const cargoPricing = await this.cargoPricingModel.deleteOne({ id: id });
     if (!cargoPricing.deletedCount) {
-      throw new HttpException('Cargo Pricing Not Found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'Cargo Pricing Not Found',
+          errorCode: 'cargo_pricing_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
     return cargoPricing;
   }

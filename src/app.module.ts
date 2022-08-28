@@ -11,6 +11,7 @@ import { LocationModule } from './location/location.module';
 import { UserAddressModule } from './user-address/user-address.module';
 import { CouponModule } from './coupon/coupon.module';
 import { CargoPricingModule } from './cargo-pricing/cargo-pricing.module';
+import { CargoModule } from './cargo/cargo.module';
 
 const MONGODB_URL = process.env.MONGO_URL || 'localhost';
 const MONGODB_USER = process.env.MONGODB_USER;
@@ -35,6 +36,7 @@ const MONGO_CONNECTION_STR =
     UserAddressModule,
     CouponModule,
     CargoPricingModule,
+    CargoModule,
   ],
   controllers: [AppController],
   providers: [AppService],

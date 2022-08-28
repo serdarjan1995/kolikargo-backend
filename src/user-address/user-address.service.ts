@@ -62,7 +62,11 @@ export class UserAddressService {
     });
     if (!country) {
       throw new HttpException(
-        `Country ${userAddress.country} Not Found`,
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `Country ${userAddress.country} Not Found`,
+          errorCode: 'country_not_found',
+        },
         HttpStatus.NOT_FOUND,
       );
     }
@@ -76,7 +80,11 @@ export class UserAddressService {
     });
     if (!province) {
       throw new HttpException(
-        `Province ${userAddress.country} Not Found`,
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `Province ${userAddress.province} Not Found`,
+          errorCode: 'province_not_found',
+        },
         HttpStatus.NOT_FOUND,
       );
     }
@@ -91,7 +99,11 @@ export class UserAddressService {
       });
       if (!city) {
         throw new HttpException(
-          `City ${userAddress.city} Not Found`,
+          {
+            statusCode: HttpStatus.NOT_FOUND,
+            message: `City ${userAddress.city} Not Found`,
+            errorCode: 'city_not_found',
+          },
           HttpStatus.NOT_FOUND,
         );
       }
@@ -105,22 +117,40 @@ export class UserAddressService {
       });
       if (!district) {
         throw new HttpException(
-          `District ${userAddress.district} Not Found`,
+          {
+            statusCode: HttpStatus.NOT_FOUND,
+            message: `District ${userAddress.district} Not Found`,
+            errorCode: 'district_not_found',
+          },
           HttpStatus.NOT_FOUND,
         );
       }
     }
   }
 
-  public async getUserAddress(id, userId): Promise<UserAddressModel> {
+  public async getUserAddress(
+    id,
+    userId,
+    noProjection = false,
+  ): Promise<UserAddressModel> {
+    const filter = {
+      id: id,
+      user: await this.userService.idToObjectId(userId),
+    };
+    const projection = noProjection ? null : userAddressModelProjection;
+
     const userAddress = await this.userAddressModel
-      .findOne(
-        { id: id, user: await this.userService.idToObjectId(userId) },
-        userAddressModelProjection,
-      )
+      .findOne(filter, projection)
       .exec();
     if (!userAddress) {
-      throw new HttpException('User Address Not Found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `User Address Not Found`,
+          errorCode: 'user_address_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
     return userAddress;
   }
@@ -143,7 +173,14 @@ export class UserAddressService {
       .findOneAndUpdate({ id: id, user: user }, updateParams)
       .exec();
     if (!userAddress) {
-      throw new HttpException('User Address Not Found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `User Address Not Found`,
+          errorCode: 'user_address_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
     return this.getUserAddress(userAddress.id, userId);
   }
@@ -160,7 +197,14 @@ export class UserAddressService {
   public async deleteUserAddress(id): Promise<any> {
     const userAddress = await this.userAddressModel.deleteOne({ id: id });
     if (!userAddress.deletedCount) {
-      throw new HttpException('User Address Not Found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `User Address Not Found`,
+          errorCode: 'user_address_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
     return userAddress;
   }

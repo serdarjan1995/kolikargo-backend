@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
   CouponModel,
-  CouponType,
+  COUPON_TYPES,
   CreateCouponModel,
   ValidateCouponModel,
 } from './models/coupon.model';
@@ -48,15 +48,21 @@ export class CouponService {
       },
     });
 
-    if (newCoupon.type == CouponType.COMPANY) {
+    if (newCoupon.type == COUPON_TYPES.COMPANY) {
       newCoupon.supplier = await this.cargoSupplierService.idToObjectId(
         newCoupon.supplier,
       );
+    } else {
+      newCoupon.supplier = null;
     }
 
     if (existingCoupon.length) {
       throw new HttpException(
-        'Coupon code or title already exists, please check entries',
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: 'Coupon code or title already exists, please check entries',
+          errorCode: 'already_exists',
+        },
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -67,13 +73,23 @@ export class CouponService {
     return this.getCoupon(coupon.id);
   }
 
-  public async getCoupon(id): Promise<CouponModel> {
+  public async getCoupon(
+    id: string,
+    noProjection = false,
+  ): Promise<CouponModel> {
     const coupon = await this.couponModel
-      .findOne({ id: id }, CouponModelProjection)
+      .findOne({ id: id }, noProjection ? null : CouponModelProjection)
       .populate(this.populateFields)
       .exec();
     if (!coupon) {
-      throw new HttpException('Coupon Not Found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'Coupon Not Found',
+          errorCode: 'coupon_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
     return coupon;
   }
@@ -87,7 +103,14 @@ export class CouponService {
       .findOneAndUpdate({ id: id }, updateParams)
       .exec();
     if (!coupon) {
-      throw new HttpException('Coupon Not Found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'Coupon Not Found',
+          errorCode: 'coupon_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
     return this.getCoupon(coupon.id);
   }
@@ -95,21 +118,37 @@ export class CouponService {
   public async deleteCoupon(id): Promise<any> {
     const coupon = await this.couponModel.deleteOne({ id: id });
     if (!coupon.deletedCount) {
-      throw new HttpException('Coupon Not Found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'Coupon Not Found',
+          errorCode: 'coupon_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
     return coupon;
   }
 
-  public async validateCoupon(coupon: ValidateCouponModel): Promise<any> {
+  public async validateCoupon(
+    coupon: ValidateCouponModel,
+  ): Promise<CouponModel> {
     // find universal coupon and check validity
     const universalCoupons = await this.getCoupons({
-      type: CouponType.UNIVERSAL,
+      type: COUPON_TYPES.UNIVERSAL,
       code: coupon.code,
     });
     if (universalCoupons.length) {
       const validCoupon: CouponModel = universalCoupons[0];
       if (validCoupon.expires && validCoupon.expires < new Date()) {
-        throw new HttpException('Coupon expired', HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_FOUND,
+            message: 'Coupon Expired',
+            errorCode: 'coupon_expired',
+          },
+          HttpStatus.NOT_FOUND,
+        );
       }
       return validCoupon;
     }
@@ -131,10 +170,24 @@ export class CouponService {
           validCoupon.supplier?.id !== coupon.supplier) ||
         (validCoupon.expires && validCoupon.expires < new Date())
       ) {
-        throw new HttpException('Coupon Not Found', HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_FOUND,
+            message: 'Coupon Not Found',
+            errorCode: 'coupon_not_found',
+          },
+          HttpStatus.NOT_FOUND,
+        );
       }
       return validCoupon;
     }
-    throw new HttpException('Coupon Not Found', HttpStatus.NOT_FOUND);
+    throw new HttpException(
+      {
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'Coupon Not Found',
+        errorCode: 'coupon_not_found',
+      },
+      HttpStatus.NOT_FOUND,
+    );
   }
 }

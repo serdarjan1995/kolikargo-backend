@@ -86,7 +86,11 @@ export class CargoPricingController {
       );
       if (!supplier) {
         throw new HttpException(
-          'User has no permission to alter another cargo-supplier',
+          {
+            statusCode: HttpStatus.FORBIDDEN,
+            message: 'User has no permission to alter another cargo-supplier',
+            errorCode: 'cargo_supplier_validation_error',
+          },
           HttpStatus.FORBIDDEN,
         );
       }
@@ -129,7 +133,11 @@ export class CargoPricingController {
       );
       if (!supplier) {
         throw new HttpException(
-          'User has no permission to alter another cargo-supplier',
+          {
+            statusCode: HttpStatus.FORBIDDEN,
+            message: 'User has no permission to alter another cargo-supplier',
+            errorCode: 'cargo_supplier_validation_error',
+          },
           HttpStatus.FORBIDDEN,
         );
       }
