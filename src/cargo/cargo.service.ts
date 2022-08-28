@@ -17,7 +17,7 @@ import {
   CouponModel,
   ValidateCouponModel,
 } from '../coupon/models/coupon.model';
-import { addDays } from 'date-fns';
+import { addDays, format as dateFormat } from 'date-fns';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CargoCreatedEvent } from './events/cargo-created.event';
 import { CargoStatusUpdatedEvent } from './events/cargo-status-updated.event';
@@ -223,7 +223,7 @@ export class CargoService {
       totalFee: totalFee.toFixed(2),
       user: user._id,
       supplier: supplier._id,
-      estimatedDeliveryDate: estimatedDeliveryDate,
+      estimatedDeliveryDate: dateFormat(estimatedDeliveryDate, 'yyyy-MM-dd'),
     };
 
     const cargo = await this.cargoModel.create(cargoDetailsFinal);
