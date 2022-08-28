@@ -13,11 +13,19 @@ export class SmsProviderService {
     return this.userService.sendSMS(phoneNumber, message);
   }
 
+  public async sendRejectedSMS(
+    cargoTrackingNumber: string,
+    phoneNumber: string,
+  ) {
+    const message = `Değerli müşterimiz.\n${cargoTrackingNumber} takip nolu siparişiniz onaylanmamıştır.\n\nKolikargo`;
+    return this.userService.sendSMS(phoneNumber, message);
+  }
+
   public async sendCancelledSMS(
     cargoTrackingNumber: string,
     phoneNumber: string,
   ) {
-    const message = `Değerli müşterimiz.\n${cargoTrackingNumber} takip nolu siparişiniz  onaylanmamıştır.\n\nKolikargo`;
+    const message = `Değerli müşterimiz.\n${cargoTrackingNumber} takip nolu siparişiniz iptal edilmiştir.\n\nKolikargo`;
     return this.userService.sendSMS(phoneNumber, message);
   }
 

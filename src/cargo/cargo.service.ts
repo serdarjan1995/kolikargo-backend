@@ -20,10 +20,12 @@ import {
 import { addDays } from 'date-fns';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CargoCreatedEvent } from './events/cargo-created.event';
+import { CargoStatusUpdatedEvent } from './events/cargo-status-updated.event';
 
 const CargoModelProjection = {
   _id: false,
   __v: false,
+  user: false,
 };
 
 @Injectable()
@@ -271,6 +273,16 @@ export class CargoService {
         HttpStatus.NOT_FOUND,
       );
     }
-    return this.getCargo(cargo.id);
+    const updatedCargo = await this.getCargo(cargo.id);
+    if (updateParams?.status && updateParams.status != cargo.status) {
+      const user = await this.userService.getUserBy({ _id: cargo.user });
+      const cargoStatusUpdatedEvent = new CargoStatusUpdatedEvent();
+      cargoStatusUpdatedEvent.cargoSupplierName = updatedCargo.supplier.name;
+      cargoStatusUpdatedEvent.cargoTrackingNumber = cargo.trackingNumber;
+      cargoStatusUpdatedEvent.userPhoneNumber = user.phoneNumber;
+      cargoStatusUpdatedEvent.status = CARGO_STATUSES.REJECTED;
+      this.eventEmitter.emit('cargo.status.updated', cargoStatusUpdatedEvent);
+    }
+    return updatedCargo;
   }
 }

@@ -11,6 +11,7 @@ import { CargoPricingModule } from '../cargo-pricing/cargo-pricing.module';
 import { CouponModule } from '../coupon/coupon.module';
 import { SmsProviderService } from './smsProvider.service';
 import { CargoCreatedListener } from './listeners/cargo-created.listener';
+import { CargoStatusUpdatedListener } from './listeners/cargo-status-updated.listener';
 
 @Module({
   imports: [
@@ -27,7 +28,12 @@ import { CargoCreatedListener } from './listeners/cargo-created.listener';
     UserModule,
     CouponModule,
   ],
-  providers: [CargoService, SmsProviderService, CargoCreatedListener],
+  providers: [
+    CargoService,
+    SmsProviderService,
+    CargoCreatedListener,
+    CargoStatusUpdatedListener,
+  ],
   controllers: [CargoController],
   exports: [CargoService, SmsProviderService],
 })
