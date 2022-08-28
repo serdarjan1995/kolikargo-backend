@@ -94,7 +94,7 @@ export class UserAddressController {
   })
   public async updateUserAddress(
     @Param('id') id: string,
-    @Body() userAddress: UserAddressModel,
+    @Body() userAddress: CreateUserAddressModel,
     @Request() req,
   ) {
     return this.userAddressService.updateUserAddress(
