@@ -9,6 +9,8 @@ import { CargoSchema } from './schemas/cargo.schema';
 import { UserAddressModule } from '../user-address/user-address.module';
 import { CargoPricingModule } from '../cargo-pricing/cargo-pricing.module';
 import { CouponModule } from '../coupon/coupon.module';
+import { SmsProviderService } from './smsProvider.service';
+import { CargoCreatedListener } from './listeners/cargo-created.listener';
 
 @Module({
   imports: [
@@ -25,8 +27,8 @@ import { CouponModule } from '../coupon/coupon.module';
     UserModule,
     CouponModule,
   ],
-  providers: [CargoService],
+  providers: [CargoService, SmsProviderService, CargoCreatedListener],
   controllers: [CargoController],
-  exports: [CargoService],
+  exports: [CargoService, SmsProviderService],
 })
 export class CargoModule {}

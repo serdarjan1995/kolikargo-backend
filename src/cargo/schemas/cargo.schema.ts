@@ -11,7 +11,7 @@ import { format } from 'date-fns';
 
 const getRandomStr = (length) => {
   let result = '';
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const characters = '0123456789';
   const charactersLength = characters.length;
   for (let i = 0; i < length; i++) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
@@ -21,7 +21,7 @@ const getRandomStr = (length) => {
 
 export const generateTrackingNumber = () => {
   const dateStr = format(new Date(), 'ddMMyy');
-  return `${dateStr}${getRandomStr(6)}`;
+  return `${dateStr}${getRandomStr(4)}`;
 };
 
 @Schema()

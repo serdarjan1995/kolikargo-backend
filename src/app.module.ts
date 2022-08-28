@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
@@ -23,6 +24,7 @@ const MONGO_CONNECTION_STR =
 
 @Module({
   imports: [
+    EventEmitterModule.forRoot(),
     ConfigModule.forRoot({ envFilePath: '.env' }),
     MongooseModule.forRoot(MONGO_CONNECTION_STR, { sslValidate: false }),
     TwilioModule.forRoot({

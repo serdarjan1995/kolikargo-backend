@@ -18,6 +18,8 @@ import {
   ValidateCouponModel,
 } from '../coupon/models/coupon.model';
 import { addDays } from 'date-fns';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { CargoCreatedEvent } from './events/cargo-created.event';
 
 const CargoModelProjection = {
   _id: false,
@@ -35,6 +37,7 @@ export class CargoService {
     private readonly couponService: CouponService,
     private readonly cargoPricingService: CargoPricingService,
     private readonly userService: UserService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   public populateFields = [
@@ -226,36 +229,14 @@ export class CargoService {
     await cargo.save();
 
     const savedCargo = await this.getCargo(cargo.id);
-    await this.sendCreatedSMS(savedCargo, user.phoneNumber);
+
+    const cargoCreatedEvent = new CargoCreatedEvent();
+    cargoCreatedEvent.cargoSupplierName = supplier.name;
+    cargoCreatedEvent.cargoTrackingNumber = cargo.trackingNumber;
+    cargoCreatedEvent.userPhoneNumber = user.phoneNumber;
+    this.eventEmitter.emit('cargo.created', cargoCreatedEvent);
+
     return savedCargo;
-  }
-
-  public async sendCreatedSMS(cargo: CargoModel, phoneNumber: string) {
-    const message = `Değerli müşterimiz.\n${cargo.trackingNumber} takip nolu siparişiniz oluşturulmuştur. En yakın zamanda gönderileriniz adresinizden alınacaktır.\n\nKolikargo`;
-    return this.userService.sendSMS(phoneNumber, message);
-  }
-
-  public async sendCancelledSMS(cargo: CargoModel, phoneNumber: string) {
-    const message = `Değerli müşterimiz.\n${cargo.trackingNumber} takip nolu siparişiniz  onaylanmamıştır.\n\nKolikargo`;
-    return this.userService.sendSMS(phoneNumber, message);
-  }
-
-  public async sendShippedSMS(
-    cargo: CargoModel,
-    phoneNumber: string,
-    cargoSupplierName: string,
-  ) {
-    const message = `Değerli müşterimiz. ${cargoSupplierName} tarafından gönderilen\n${cargo.trackingNumber} takip nolu kargonuz yola çıkmıştır.\n\nKolikargo`;
-    return this.userService.sendSMS(phoneNumber, message);
-  }
-
-  public async sendDeliveredSMS(
-    cargo: CargoModel,
-    phoneNumber: string,
-    cargoSupplierName: string,
-  ) {
-    const message = `Değerli müşterimiz. ${cargoSupplierName} tarafından gönderilen\n${cargo.trackingNumber} takip nolu kargonuz teslim edilmiştir. Bizi tercih ettiğiniz için teşekkür ederiz.\n\nKolikargo`;
-    return this.userService.sendSMS(phoneNumber, message);
   }
 
   public async getCargo(id): Promise<CargoModel> {
