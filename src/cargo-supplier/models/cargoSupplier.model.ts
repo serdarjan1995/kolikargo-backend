@@ -74,6 +74,16 @@ export class CargoSupplierModel {
   @IsNotEmpty()
   @IsNumber()
   @ApiProperty({
+    description: 'Min service price provided',
+    minimum: 0,
+    default: 0,
+    example: 1.99,
+  })
+  readonly minPrice: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  @ApiProperty({
     description: 'Min weight of the service',
     example: 12,
   })
@@ -145,5 +155,6 @@ export class CreateUpdateCargoSupplierModel extends OmitType(
     'reviews',
     'serviceSourceLocations',
     'serviceDestinationLocations',
+    'minPrice',
   ] as const,
 ) {}

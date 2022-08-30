@@ -31,6 +31,9 @@ export class CargoSupplier extends Document {
   @Prop({ required: true, min: 0 })
   minWeight: number;
 
+  @Prop({ required: false, min: 0, default: 0 })
+  minPrice: number;
+
   @Prop({ required: false, default: 0, min: 0 })
   deliveryEstimationMin: number;
 

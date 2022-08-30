@@ -83,9 +83,7 @@ export class CargoPricingService {
     await cargoPricing.validate();
     await cargoPricing.save();
 
-    await this.updateCargoSupplierDestinationServiceLocations(
-      cargoPricing.supplier,
-    );
+    await this.updateCargoSupplierServiceDetails(cargoPricing.supplier);
     return this.getCargoPricing(cargoPricing.id);
   }
 
@@ -161,9 +159,7 @@ export class CargoPricingService {
     }
   }
 
-  public async updateCargoSupplierDestinationServiceLocations(
-    supplierObjectId: ObjectId,
-  ) {
+  public async updateCargoSupplierServiceDetails(supplierObjectId: ObjectId) {
     const allCargoSupplierPricing = await this.filterCargoPricing({
       supplier: supplierObjectId,
     });
@@ -177,9 +173,18 @@ export class CargoPricingService {
     let locationIds = locationList.map((item) => item._id);
     locationIds = new Array(...new Set(locationIds));
 
+    const allPrices = allCargoSupplierPricing.map((item) => item.prices);
+    let pricesList = [];
+    allPrices.forEach((item) => {
+      pricesList = pricesList.concat(item);
+    });
+    let priceValues = pricesList.map((item) => item.price);
+    priceValues = new Array(...new Set(priceValues)).sort();
+    const minPrice = priceValues.length ? priceValues[0] : 0;
+
     await this.cargoSupplierService.updateCargoSupplierByFilter(
       { _id: supplierObjectId },
-      { serviceDestinationLocations: locationIds },
+      { serviceDestinationLocations: locationIds, minPrice: minPrice },
     );
   }
 
@@ -214,9 +219,7 @@ export class CargoPricingService {
       );
     }
 
-    await this.updateCargoSupplierDestinationServiceLocations(
-      cargoPricing.supplier,
-    );
+    await this.updateCargoSupplierServiceDetails(cargoPricing.supplier);
 
     return this.getCargoPricing(cargoPricing.id);
   }
