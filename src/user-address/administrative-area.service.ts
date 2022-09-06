@@ -78,4 +78,13 @@ export class AdministrativeAreaService {
       .findOne(filter, administrativeAreaProjection)
       .exec();
   }
+
+  public async addNew(newAdministrativeArea: AdministrativeAreaModel) {
+    const userAddress = await this.administrativeAreaModel.create(
+      newAdministrativeArea,
+    );
+    await userAddress.validate();
+    await userAddress.save();
+    return userAddress;
+  }
 }

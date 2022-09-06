@@ -1,9 +1,12 @@
 import {
+  Body,
   Controller,
   Get,
   HttpException,
   HttpStatus,
+  Post,
   Query,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -103,5 +106,23 @@ export class AdministrativeAreaController {
           HttpStatus.BAD_REQUEST,
         );
     }
+  }
+
+  @Post()
+  @Roles(Role.Admin)
+  public async add(
+    @Request() req,
+    @Body() newAdministrativeArea: AdministrativeAreaModel,
+  ) {
+    const existingOne = await this.administrativeAreaService.findOne({
+      category: newAdministrativeArea.category,
+      name: newAdministrativeArea.name,
+      country: newAdministrativeArea.country,
+      parent: newAdministrativeArea.parent,
+    });
+    if (existingOne) {
+      return existingOne;
+    }
+    return this.administrativeAreaService.addNew(newAdministrativeArea);
   }
 }
