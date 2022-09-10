@@ -7,7 +7,12 @@ import {
   IsString,
   IsUUID,
 } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional, OmitType, PickType } from '@nestjs/swagger';
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+  OmitType,
+  PickType,
+} from '@nestjs/swagger';
 import {
   CARGO_METHODS,
   CARGO_TYPES,
@@ -175,6 +180,13 @@ export class CargoModel {
   estimatedDeliveryDate: Date;
 
   @IsNotEmpty()
+  @IsDate()
+  @ApiProperty({
+    description: 'Cargo creation date',
+  })
+  createdAt: Date;
+
+  @IsNotEmpty()
   @IsString()
   @ApiProperty({
     description: 'Tracking Number',
@@ -191,8 +203,10 @@ export class CreateCargoModel extends OmitType(CargoModel, [
   'user',
   'estimatedDeliveryDate',
   'trackingNumber',
+  'createdAt',
 ] as const) {}
 
 export class UpdateCargoStatusModel extends PickType(CargoModel, [
   'status',
+  'note',
 ] as const) {}

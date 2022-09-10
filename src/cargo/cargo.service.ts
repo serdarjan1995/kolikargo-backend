@@ -21,6 +21,7 @@ import { addDays, format as dateFormat } from 'date-fns';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CargoCreatedEvent } from './events/cargo-created.event';
 import { CargoStatusUpdatedEvent } from './events/cargo-status-updated.event';
+import { CargoTrackingModel } from './models/cargoTracking.model';
 
 const CargoModelProjection = {
   _id: false,
@@ -28,11 +29,19 @@ const CargoModelProjection = {
   user: false,
 };
 
+const CargoTrackingModelProjection = {
+  _id: false,
+  __v: false,
+  cargo: false,
+};
+
 @Injectable()
 export class CargoService {
   constructor(
     @InjectModel('Cargo')
     private readonly cargoModel: Model<CargoModel>,
+    @InjectModel('CargoTracking')
+    private readonly cargoTrackingModel: Model<CargoTrackingModel>,
     private readonly cargoSupplierService: CargoSupplierService,
     private readonly locationService: LocationService,
     private readonly userAddressService: UserAddressService,
@@ -216,6 +225,7 @@ export class CargoService {
 
     const cargoDetailsFinal = {
       ...newCargo,
+      createdAt: new Date(),
       status: CARGO_STATUSES.NEW_REQUEST,
       total_fee: totalFee,
       service_fee: serviceFee,
@@ -229,6 +239,18 @@ export class CargoService {
     const cargo = await this.cargoModel.create(cargoDetailsFinal);
     await cargo.validate();
     await cargo.save();
+
+    const cargoTrackingDetail = {
+      status: cargo.status,
+      datetime: new Date(),
+      note: '',
+      cargo: cargo,
+    };
+    const cargoTracking = await this.cargoTrackingModel.create(
+      cargoTrackingDetail,
+    );
+    await cargoTracking.validate();
+    await cargoTracking.save();
 
     const savedCargo = await this.getCargo(cargo.id);
 
@@ -259,6 +281,27 @@ export class CargoService {
     return cargo;
   }
 
+  public async getCargoTracking(id): Promise<CargoTrackingModel[]> {
+    const cargo = await this.cargoModel
+      .findOne({ id: id })
+      .populate(this.populateFields)
+      .exec();
+    if (!cargo) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `Cargo Not Found`,
+          errorCode: 'cargo_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return await this.cargoTrackingModel
+      .find({ cargo: cargo._id }, CargoTrackingModelProjection)
+      .sort('+datetime')
+      .exec();
+  }
+
   public async updateCargo(id: string, updateParams): Promise<CargoModel> {
     const cargo = await this.cargoModel
       .findOneAndUpdate({ id: id }, updateParams)
@@ -282,6 +325,17 @@ export class CargoService {
       cargoStatusUpdatedEvent.userPhoneNumber = user.phoneNumber;
       cargoStatusUpdatedEvent.status = updateParams.status;
       this.eventEmitter.emit('cargo.status.updated', cargoStatusUpdatedEvent);
+      const cargoTrackingDetail = {
+        status: updateParams.status,
+        datetime: new Date(),
+        note: updateParams?.note,
+        cargo: cargo,
+      };
+      const cargoTracking = await this.cargoTrackingModel.create(
+        cargoTrackingDetail,
+      );
+      await cargoTracking.validate();
+      await cargoTracking.save();
     }
     return updatedCargo;
   }

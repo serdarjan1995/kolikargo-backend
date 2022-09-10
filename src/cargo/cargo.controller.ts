@@ -67,6 +67,16 @@ export class CargoController {
     return await this.cargoService.getCargo(id);
   }
 
+  @Get(':id/tracking')
+  @Roles(Role.User)
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: CargoModel,
+  })
+  public async getCargoTrackingByCargoId(@Param('id') id: string) {
+    return await this.cargoService.getCargoTracking(id);
+  }
+
   @Put(':id')
   @Roles(Role.Admin)
   @ApiOkResponse({

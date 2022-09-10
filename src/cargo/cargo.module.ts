@@ -12,6 +12,7 @@ import { CouponModule } from '../coupon/coupon.module';
 import { SmsProviderService } from './smsProvider.service';
 import { CargoCreatedListener } from './listeners/cargo-created.listener';
 import { CargoStatusUpdatedListener } from './listeners/cargo-status-updated.listener';
+import { CargoTrackingSchema } from './schemas/cargoTracking.schema';
 
 @Module({
   imports: [
@@ -19,6 +20,10 @@ import { CargoStatusUpdatedListener } from './listeners/cargo-status-updated.lis
       {
         name: 'Cargo',
         schema: CargoSchema,
+      },
+      {
+        name: 'CargoTracking',
+        schema: CargoTrackingSchema,
       },
     ]),
     CargoSupplierModule,
