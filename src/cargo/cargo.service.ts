@@ -280,7 +280,7 @@ export class CargoService {
       cargoStatusUpdatedEvent.cargoSupplierName = updatedCargo.supplier.name;
       cargoStatusUpdatedEvent.cargoTrackingNumber = cargo.trackingNumber;
       cargoStatusUpdatedEvent.userPhoneNumber = user.phoneNumber;
-      cargoStatusUpdatedEvent.status = CARGO_STATUSES.REJECTED;
+      cargoStatusUpdatedEvent.status = cargo.status;
       this.eventEmitter.emit('cargo.status.updated', cargoStatusUpdatedEvent);
     }
     return updatedCargo;
