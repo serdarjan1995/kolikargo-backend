@@ -14,6 +14,8 @@ import { Roles } from '../auth/roles.decorator';
 import { Role } from '../auth/role.enum';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
+import { AppConfigService } from './appConfig.service';
+import { AppConfigModel } from './models/appConfig.model';
 
 @Controller('user')
 @UseGuards(RolesGuard)
@@ -44,5 +46,24 @@ export class UserController {
   @Roles(Role.Admin)
   public async updateUser(@Param('id') id: string) {
     return id;
+  }
+}
+
+@Controller('app-config')
+@UseGuards(RolesGuard)
+@UseGuards(JwtAuthGuard)
+export class AppConfigController {
+  constructor(private appConfigService: AppConfigService) {}
+
+  @Get()
+  @Roles(Role.User)
+  public async getAppConfig() {
+    return await this.appConfigService.getAppConfig();
+  }
+
+  @Post()
+  @Roles(Role.Admin)
+  public async updateAppConfig(@Body() appConfig: AppConfigModel) {
+    return await this.appConfigService.updateAppConfig(appConfig);
   }
 }

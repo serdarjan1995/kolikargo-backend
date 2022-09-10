@@ -138,6 +138,9 @@ export class Cargo extends Document {
   @Prop({ required: true })
   estimatedDeliveryDate: Date;
 
+  @Prop({ required: false })
+  deliveredDate: Date;
+
   @Prop({ required: true })
   createdAt: Date;
 

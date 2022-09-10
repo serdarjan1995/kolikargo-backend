@@ -179,6 +179,13 @@ export class CargoModel {
   })
   estimatedDeliveryDate: Date;
 
+  @IsOptional()
+  @IsDate()
+  @ApiProperty({
+    description: 'Delivered Date',
+  })
+  deliveredDate: Date;
+
   @IsNotEmpty()
   @IsDate()
   @ApiProperty({
@@ -202,6 +209,7 @@ export class CreateCargoModel extends OmitType(CargoModel, [
   'status',
   'user',
   'estimatedDeliveryDate',
+  'deliveredDate',
   'trackingNumber',
   'createdAt',
 ] as const) {}

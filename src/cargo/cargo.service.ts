@@ -336,6 +336,10 @@ export class CargoService {
       );
       await cargoTracking.validate();
       await cargoTracking.save();
+
+      if (updateParams.status == CARGO_STATUSES.DELIVERED) {
+        updatedCargo.deliveredDate = new Date();
+      }
     }
     return updatedCargo;
   }
