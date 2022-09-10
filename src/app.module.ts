@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -13,6 +13,7 @@ import { UserAddressModule } from './user-address/user-address.module';
 import { CouponModule } from './coupon/coupon.module';
 import { CargoPricingModule } from './cargo-pricing/cargo-pricing.module';
 import { CargoModule } from './cargo/cargo.module';
+import { AppLoggerMiddleware } from './app.middleware';
 
 const MONGODB_URL = process.env.MONGO_URL || 'localhost';
 const MONGODB_USER = process.env.MONGODB_USER;
@@ -43,4 +44,8 @@ const MONGO_CONNECTION_STR =
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(AppLoggerMiddleware).forRoutes('*');
+  }
+}
