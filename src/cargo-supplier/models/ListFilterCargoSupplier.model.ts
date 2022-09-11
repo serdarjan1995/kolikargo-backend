@@ -8,7 +8,7 @@ import {
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { CARGO_TYPES } from '../../cargo-pricing/models/cargoPricing.model';
+import { CARGO_METHODS, CARGO_TYPES } from '../../cargo-pricing/models/cargoPricing.model';
 
 export class ListFilterCargoSupplierModel {
   @IsString()
@@ -72,4 +72,14 @@ export class ListFilterCargoSupplierModel {
     example: CARGO_TYPES.FURNITURE,
   })
   cargoType: string;
+
+  @IsString()
+  @IsEnum(CARGO_METHODS)
+  @IsOptional()
+  @ApiPropertyOptional({
+    description: 'Cargo Method',
+    enum: CARGO_METHODS,
+    example: CARGO_METHODS.TRUCK,
+  })
+  cargoMethod: string;
 }

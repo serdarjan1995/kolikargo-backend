@@ -56,6 +56,7 @@ export class CargoSupplierController {
     const destinationLocation = query?.destinationLocation;
     const sourceLocation = query?.sourceLocation;
     const cargoType = query?.cargoType;
+    const cargoMethod = query?.cargoMethod;
 
     if (name) {
       filter['name'] = { $regex: `.*${name}.*`, $options: 'i' };
@@ -89,14 +90,27 @@ export class CargoSupplierController {
         $in: sourceLocationObjectId,
       };
     }
-
+    const pricingSupplierFilter = {};
     if (cargoType) {
       // check if supplier has valid pricing to support this cargo type
-      const cargoPricing = await this.cargoPricingService.filterCargoPricing({
-        cargoType: cargoType,
-      });
+      pricingSupplierFilter['prices'] = {
+        $elemMatch: { cargoType: cargoType },
+      };
+    }
+
+    if (cargoMethod) {
+      // check if supplier has valid pricing to support this cargo method
+      pricingSupplierFilter['cargoMethod'] = cargoMethod;
+    }
+
+    if (cargoType || cargoMethod) {
+      const cargoPricing = await this.cargoPricingService.filterCargoPricing(
+        pricingSupplierFilter,
+      );
+      let pricingSuppliers = cargoPricing.map((item) => item.supplier);
+      pricingSuppliers = pricingSuppliers.filter((i) => i !== null);
       filter['_id'] = {
-        $in: cargoPricing.map((item) => item.supplier),
+        $in: pricingSuppliers,
       };
     }
 
