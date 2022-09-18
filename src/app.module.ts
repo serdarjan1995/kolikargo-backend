@@ -14,6 +14,8 @@ import { CouponModule } from './coupon/coupon.module';
 import { CargoPricingModule } from './cargo-pricing/cargo-pricing.module';
 import { CargoModule } from './cargo/cargo.module';
 import { AppLoggerMiddleware } from './app.middleware';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 const MONGODB_URL = process.env.MONGO_URL || 'localhost';
 const MONGODB_USER = process.env.MONGODB_USER;
@@ -25,6 +27,10 @@ const MONGO_CONNECTION_STR =
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'static'),
+      serveRoot: '/static',
+    }),
     EventEmitterModule.forRoot(),
     ConfigModule.forRoot({ envFilePath: '.env' }),
     MongooseModule.forRoot(MONGO_CONNECTION_STR, { sslValidate: false }),

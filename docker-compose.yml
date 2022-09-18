@@ -24,7 +24,7 @@ services:
       MONGODB_PASSWORD: koliPasswd123mng!
 
   mongodb:
-    image: mongo:5.0.0
+    image: mongo:6.0.1
     container_name: server-mongodb
     environment:
       - MONGO_INITDB_ROOT_USERNAME=koliadminmng!
@@ -70,18 +70,8 @@ services:
   mongo-express-prod:
     image: mongo-express
     container_name: server-mongo-express-prod
-    environment:
-      #- ME_CONFIG_MONGODB_URL=mongodb+srv://koliadminmng:eDYm935v271h6Rg8@koli-db-4feb8a61.mongo.ondigitalocean.com/kolikargo
-      - ME_CONFIG_MONGODB_SERVER=koli-db-4feb8a61.mongo.ondigitalocean.com
-      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
-      - ME_CONFIG_MONGODB_ADMINUSERNAME=koliadminmng
-      - ME_CONFIG_MONGODB_ADMINPASSWORD=eDYm935v271h6Rg8
-      - ME_CONFIG_BASICAUTH_USERNAME=koliadmin
-      - ME_CONFIG_BASICAUTH_PASSWORD=KoliAdm123!
-      - ME_CONFIG_MONGODB_SSLVALIDATE=false
-      - ME_CONFIG_MONGODB_SSL=true
-      - ME_CONFIG_MONGODB_CA_FILE=/etc/db-client.ca.crt
-      - ME_CONFIG_MONGODB_AUTH_DATABASE=kolikargo
+    env_file:
+      .env
     ports:
       - "8082:8082"
     volumes:
