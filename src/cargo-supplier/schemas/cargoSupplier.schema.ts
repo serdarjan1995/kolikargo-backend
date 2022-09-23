@@ -64,6 +64,9 @@ export class CargoSupplier extends Document {
 
   @Prop({ required: true })
   avatarUrl: string;
+
+  @Prop({ required: false })
+  authToken: string;
 }
 
 export const CargoSupplierSchema = SchemaFactory.createForClass(CargoSupplier);

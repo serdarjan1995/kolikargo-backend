@@ -163,14 +163,14 @@ export class CargoModel {
   @ApiProperty({
     description: 'Cost of the cargo shipment',
   })
-  service_fee: number;
+  serviceFee: number;
 
   @IsNotEmpty()
   @IsNumber()
   @ApiProperty({
     description: 'Cost of the cargo shipment',
   })
-  total_fee: number;
+  totalFee: number;
 
   @IsNotEmpty()
   @IsDate()
@@ -203,8 +203,8 @@ export class CargoModel {
 
 export class CreateCargoModel extends OmitType(CargoModel, [
   'id',
-  'total_fee',
-  'service_fee',
+  'totalFee',
+  'serviceFee',
   'fee',
   'status',
   'user',

@@ -8,16 +8,7 @@ import {
 import { CARGO_STATUSES } from '../models/cargo.model';
 import { UserAddressDetailSchema } from '../../user-address/schemas/userAddress.schema';
 import { format } from 'date-fns';
-
-const getRandomStr = (length) => {
-  let result = '';
-  const characters = '0123456789';
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-};
+import { getRandomStr } from '../../utils';
 
 export const generateTrackingNumber = () => {
   const dateStr = format(new Date(), 'ddMMyy');

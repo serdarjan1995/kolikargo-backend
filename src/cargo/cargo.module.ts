@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CargoService } from './cargo.service';
-import { CargoController } from './cargo.controller';
+import { CargoController, CargoPublicTrackingController } from './cargo.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CargoSupplierModule } from '../cargo-supplier/cargo-supplier.module';
 import { UserModule } from '../user/user.module';
@@ -39,7 +39,7 @@ import { CargoTrackingSchema } from './schemas/cargoTracking.schema';
     CargoCreatedListener,
     CargoStatusUpdatedListener,
   ],
-  controllers: [CargoController],
+  controllers: [CargoController, CargoPublicTrackingController],
   exports: [CargoService, SmsProviderService],
 })
 export class CargoModule {}

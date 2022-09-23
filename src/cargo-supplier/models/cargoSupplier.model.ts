@@ -144,6 +144,8 @@ export class CargoSupplierModel {
     ],
   })
   serviceDestinationLocations: any[];
+
+  publicAuthToken: string;
 }
 
 export class CreateUpdateCargoSupplierModel extends OmitType(
@@ -156,5 +158,6 @@ export class CreateUpdateCargoSupplierModel extends OmitType(
     'serviceSourceLocations',
     'serviceDestinationLocations',
     'minPrice',
+    'publicAuthToken',
   ] as const,
 ) {}

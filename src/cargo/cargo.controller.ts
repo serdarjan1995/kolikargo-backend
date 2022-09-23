@@ -4,7 +4,7 @@ import {
   Get,
   Param,
   Post,
-  Put,
+  Put, Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -25,6 +25,7 @@ import {
   CreateCargoModel,
   UpdateCargoStatusModel,
 } from './models/cargo.model';
+import { CargoPublicTrackingModel } from './models/cargoPublicTracking.model';
 
 @Controller('cargo')
 @UseGuards(RolesGuard)
@@ -44,6 +45,17 @@ export class CargoController {
   public async listCargo(@Request() req) {
     const user: AuthenticatedUser = req.user;
     return await this.cargoService.listUserCargos(user.userId);
+  }
+
+  @Get('/supplier/:id')
+  @Roles(Role.Supplier)
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: CargoModel,
+    isArray: true,
+  })
+  public async listSupplierCargos(@Param('id') id: string) {
+    return await this.cargoService.listSupplierCargos(id);
   }
 
   @Post()
@@ -89,5 +101,27 @@ export class CargoController {
     @Body() updateFields: UpdateCargoStatusModel,
   ) {
     return await this.cargoService.updateCargo(id, updateFields);
+  }
+}
+
+@Controller('track-cargo')
+@ApiTags('cargo')
+export class CargoPublicTrackingController {
+  constructor(private cargoService: CargoService) {}
+
+  @Get(':trackingNumber')
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: CargoPublicTrackingModel,
+  })
+  public async getCargoDetails(
+    @Param('trackingNumber') trackingNumber: string,
+    @Query() query,
+  ) {
+    return await this.cargoService.getCargoDetailsByTrackingNumber(
+      trackingNumber,
+      true,
+      query?.authToken,
+    );
   }
 }

@@ -7,11 +7,13 @@ import {
 } from './models/cargoSupplier.model';
 import { LocationService } from '../location/location.service';
 import { UserService } from '../user/user.service';
+import { getRandomStr } from '../utils';
 
 const cargoSupplierModelProjection = {
   _id: false,
   __v: false,
   user: false,
+  publicAuthToken: false,
 };
 
 @Injectable()
@@ -67,6 +69,7 @@ export class CargoSupplierService {
     const cargoSupplier = await this.cargoSupplierModel.create(
       newCargoSupplier,
     );
+    cargoSupplier.publicAuthToken = getRandomStr(25, true);
     await cargoSupplier.validate();
     await cargoSupplier.save();
     return this.getCargoSupplier(cargoSupplier.id);
@@ -108,6 +111,14 @@ export class CargoSupplierService {
         },
         HttpStatus.NOT_FOUND,
       );
+    }
+    return cargoSupplier;
+  }
+
+  public async getCargoSupplierByFilter(filter): Promise<CargoSupplierModel> {
+    const cargoSupplier = await this.cargoSupplierModel.findOne(filter).exec();
+    if (!cargoSupplier) {
+      return null;
     }
     return cargoSupplier;
   }

@@ -22,11 +22,22 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CargoCreatedEvent } from './events/cargo-created.event';
 import { CargoStatusUpdatedEvent } from './events/cargo-status-updated.event';
 import { CargoTrackingModel } from './models/cargoTracking.model';
+import { CargoPublicTrackingModel } from './models/cargoPublicTracking.model';
+import { CargoSupplierModel } from '../cargo-supplier/models/cargoSupplier.model';
 
 const CargoModelProjection = {
   _id: false,
   __v: false,
   user: false,
+};
+
+const CargoModelPublicTrackingProjection = {
+  _id: false,
+  __v: false,
+  serviceFee: false,
+  usedCoupon: false,
+  user: false,
+  note: false,
 };
 
 const CargoTrackingModelProjection = {
@@ -54,7 +65,7 @@ export class CargoService {
   public populateFields = [
     {
       path: 'supplier',
-      select: 'id name description avatarUrl',
+      select: 'id name description avatarUrl, stars',
     },
     {
       path: 'sourceLocation',
@@ -78,6 +89,18 @@ export class CargoService {
       .find(
         {
           user: await this.userService.idToObjectId(userId),
+        },
+        CargoModelProjection,
+      )
+      .populate(this.populateFields)
+      .exec();
+  }
+
+  public async listSupplierCargos(supplierId: string): Promise<CargoModel[]> {
+    return await this.cargoModel
+      .find(
+        {
+          supplier: await this.cargoSupplierService.idToObjectId(supplierId),
         },
         CargoModelProjection,
       )
@@ -281,9 +304,112 @@ export class CargoService {
     return cargo;
   }
 
-  public async getCargoTracking(id): Promise<CargoTrackingModel[]> {
+  public async getCargoDetailsByTrackingNumber(
+    trackingNumber: string,
+    isPublicTracking = true,
+    authToken = '',
+  ): Promise<CargoPublicTrackingModel> {
     const cargo = await this.cargoModel
-      .findOne({ id: id })
+      .findOne(
+        { trackingNumber: trackingNumber },
+        isPublicTracking
+          ? CargoModelPublicTrackingProjection
+          : CargoModelProjection,
+      )
+      .populate(this.populateFields)
+      .exec();
+    if (!cargo) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `Cargo Not Found`,
+          errorCode: 'cargo_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    let cargoSupplier: null | CargoSupplierModel = null;
+    if (authToken && authToken != '') {
+      // find related cargoSupplier with authToken
+      cargoSupplier = await this.cargoSupplierService.getCargoSupplierByFilter({
+        authToken: authToken,
+        id: cargo.supplier.id,
+      });
+    }
+
+    const tracking = await this.getCargoTracking(cargo.id);
+    const cargoJson = JSON.stringify(cargo);
+    const cargoParsed = JSON.parse(cargoJson);
+    let starredDetail: string;
+
+    if (isPublicTracking && !cargoSupplier) {
+      starredDetail = cargoParsed['pickupAddress']['contactName'];
+      starredDetail =
+        starredDetail.substring(0, 2) +
+        '*'.repeat(Math.abs(starredDetail.length - 2));
+      cargoParsed['pickupAddress']['contactName'] = starredDetail;
+
+      starredDetail = cargoParsed['pickupAddress']['contactSurname'];
+      starredDetail =
+        starredDetail.substring(0, 2) +
+        '*'.repeat(Math.abs(starredDetail.length - 2));
+      cargoParsed['pickupAddress']['contactSurname'] = starredDetail;
+
+      starredDetail = cargoParsed['pickupAddress']['contactPhoneNumber'];
+      starredDetail =
+        starredDetail.substring(0, 3) +
+        '*'.repeat(Math.abs(starredDetail.length - 5));
+      cargoParsed['pickupAddress']['contactPhoneNumber'] = starredDetail;
+
+      starredDetail = cargoParsed['pickupAddress']['city'];
+      starredDetail =
+        starredDetail.substring(0, 3) +
+        '*'.repeat(Math.abs(starredDetail.length - 5));
+      cargoParsed['pickupAddress']['city'] = starredDetail;
+
+      starredDetail = cargoParsed['pickupAddress']['district'];
+      starredDetail =
+        starredDetail.substring(0, 3) +
+        '*'.repeat(Math.abs(starredDetail.length - 5));
+      cargoParsed['pickupAddress']['district'] = starredDetail;
+
+      cargoParsed['pickupAddress']['houseNo'] = '*';
+      cargoParsed['pickupAddress']['floorNo'] = '*';
+      cargoParsed['pickupAddress']['doorNo'] = '*';
+      cargoParsed['pickupAddress']['addressLine'] = '*';
+
+      // delivery address starring
+      starredDetail = cargoParsed['deliveryAddress']['contactName'];
+      starredDetail =
+        starredDetail.substring(0, 2) +
+        '*'.repeat(Math.abs(starredDetail.length - 2));
+      cargoParsed['deliveryAddress']['contactName'] = starredDetail;
+
+      starredDetail = cargoParsed['deliveryAddress']['contactSurname'];
+      starredDetail =
+        starredDetail.substring(0, 2) +
+        '*'.repeat(Math.abs(starredDetail.length - 2));
+      cargoParsed['deliveryAddress']['contactSurname'] = starredDetail;
+
+      starredDetail = cargoParsed['deliveryAddress']['contactPhoneNumber'];
+      starredDetail =
+        starredDetail.substring(0, 3) +
+        '*'.repeat(Math.abs(starredDetail.length - 5));
+      cargoParsed['deliveryAddress']['contactPhoneNumber'] = starredDetail;
+
+      starredDetail = cargoParsed['deliveryAddress']['addressLine'];
+      starredDetail =
+        starredDetail.substring(0, 3) +
+        '*'.repeat(Math.abs(starredDetail.length - 5));
+      cargoParsed['deliveryAddress']['addressLine'] = starredDetail;
+    }
+    return { ...(cargoParsed as CargoModel), tracking };
+  }
+
+  public async getCargoTracking(cargoId): Promise<CargoTrackingModel[]> {
+    const cargo = await this.cargoModel
+      .findOne({ id: cargoId })
       .populate(this.populateFields)
       .exec();
     if (!cargo) {
