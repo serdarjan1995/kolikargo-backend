@@ -1,6 +1,28 @@
-import { IsArray, IsBoolean, IsNotEmpty, IsNumber } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsObject,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
+
+export class AppConfigAnnouncementModel {
+  @IsNotEmpty()
+  @IsBoolean()
+  @ApiProperty({
+    description: 'is enabled',
+  })
+  readonly enabled: boolean;
+
+  @IsNotEmpty()
+  @IsObject()
+  @ApiProperty({
+    description: 'messages',
+  })
+  readonly messages: object;
+}
 
 export class AppConfigModel {
   @IsNotEmpty()
@@ -32,4 +54,18 @@ export class AppConfigModel {
     description: 'Latest version',
   })
   readonly latest_version: number;
+
+  @IsNotEmpty()
+  @Type(() => AppConfigAnnouncementModel)
+  @ApiProperty({
+    description: 'Announcement messages to show to users',
+  })
+  readonly announcement: AppConfigAnnouncementModel;
+
+  @IsNotEmpty()
+  @Type(() => AppConfigAnnouncementModel)
+  @ApiProperty({
+    description: 'Maintenance messages to show to users',
+  })
+  readonly maintenance: AppConfigAnnouncementModel;
 }
