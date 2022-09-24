@@ -50,19 +50,18 @@ export class UserController {
 }
 
 @Controller('app-config')
-@UseGuards(RolesGuard)
-@UseGuards(JwtAuthGuard)
 export class AppConfigController {
   constructor(private appConfigService: AppConfigService) {}
 
   @Get()
-  @Roles(Role.User)
   public async getAppConfig() {
     return await this.appConfigService.getAppConfig();
   }
 
   @Post()
   @Roles(Role.Admin)
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
   public async updateAppConfig(@Body() appConfig: AppConfigModel) {
     return await this.appConfigService.updateAppConfig(appConfig);
   }
