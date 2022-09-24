@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { CargoCreatedEvent } from '../events/cargo-created.event';
+import { CargoCreatedEvent, CargoCreatedSupplierEvent } from '../events/cargo-created.event';
 import { SmsProviderService } from '../smsProvider.service';
 
 @Injectable()
@@ -12,6 +12,14 @@ export class CargoCreatedListener {
     await this.smsProviderService.sendCreatedSMS(
       event.cargoTrackingNumber,
       event.userPhoneNumber,
+    );
+  }
+
+  @OnEvent('cargo.created.supplier')
+  async handleCargoCreatedSupplierEvent(event: CargoCreatedSupplierEvent) {
+    await this.smsProviderService.sendCreatedSMStoSupplier(
+      event.cargoSupplierPhoneNumber,
+      event.link,
     );
   }
 }

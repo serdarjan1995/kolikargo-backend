@@ -19,7 +19,10 @@ import {
 } from '../coupon/models/coupon.model';
 import { addDays, format as dateFormat } from 'date-fns';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { CargoCreatedEvent } from './events/cargo-created.event';
+import {
+  CargoCreatedEvent,
+  CargoCreatedSupplierEvent,
+} from './events/cargo-created.event';
 import { CargoStatusUpdatedEvent } from './events/cargo-status-updated.event';
 import { CargoTrackingModel } from './models/cargoTracking.model';
 import { CargoPublicTrackingModel } from './models/cargoPublicTracking.model';
@@ -277,11 +280,23 @@ export class CargoService {
 
     const savedCargo = await this.getCargo(cargo.id);
 
+    // for user
     const cargoCreatedEvent = new CargoCreatedEvent();
     cargoCreatedEvent.cargoSupplierName = supplier.name;
     cargoCreatedEvent.cargoTrackingNumber = cargo.trackingNumber;
     cargoCreatedEvent.userPhoneNumber = user.phoneNumber;
     this.eventEmitter.emit('cargo.created', cargoCreatedEvent);
+
+    // for supplier
+    const supplierUser = await this.cargoSupplierService.getCargoSupplierUser(
+      supplier.id,
+    );
+    const cargoCreatedSupplierEvent = new CargoCreatedSupplierEvent();
+    cargoCreatedSupplierEvent.cargoSupplierName = supplier.name;
+    cargoCreatedSupplierEvent.cargoSupplierPhoneNumber =
+      supplierUser.user.phoneNumber;
+    cargoCreatedSupplierEvent.link = `https://api.kolikargo.com/track-cargo/${cargo.trackingNumber}?authToken=${supplier.publicAuthToken}`;
+    this.eventEmitter.emit('cargo.created.supplier', cargoCreatedSupplierEvent);
 
     return savedCargo;
   }
@@ -333,7 +348,7 @@ export class CargoService {
     if (authToken && authToken != '') {
       // find related cargoSupplier with authToken
       cargoSupplier = await this.cargoSupplierService.getCargoSupplierByFilter({
-        authToken: authToken,
+        publicAuthToken: authToken,
         id: cargo.supplier.id,
       });
     }

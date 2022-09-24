@@ -3,3 +3,9 @@ export class CargoCreatedEvent {
   cargoTrackingNumber: string;
   userPhoneNumber: string;
 }
+
+export class CargoCreatedSupplierEvent {
+  cargoSupplierName: string;
+  cargoSupplierPhoneNumber: string;
+  link: string;
+}

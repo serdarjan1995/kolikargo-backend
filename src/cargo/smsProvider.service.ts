@@ -5,6 +5,14 @@ import { UserService } from '../user/user.service';
 export class SmsProviderService {
   constructor(private readonly userService: UserService) {}
 
+  public async sendCreatedSMStoSupplier(
+    cargoSupplierPhoneNumber: string,
+    link: string,
+  ) {
+    const message = `Değerli ortağımız.\nYeni kargo talebi oluşturulmuştur. \n ${link} linkinden detaylara ulaşabilirsiniz.\n\nKolikargo`;
+    return this.userService.sendSMS(cargoSupplierPhoneNumber, message);
+  }
+
   public async sendCreatedSMS(
     cargoTrackingNumber: string,
     phoneNumber: string,

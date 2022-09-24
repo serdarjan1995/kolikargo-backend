@@ -96,6 +96,30 @@ export class CargoSupplierService {
     return cargoSupplier;
   }
 
+  public async getCargoSupplierUser(id): Promise<CargoSupplierModel> {
+    const cargoSupplier = await this.cargoSupplierModel
+      .findOne({ id: id })
+      .populate([
+        {
+          path: 'user',
+          select: 'id name surname phoneNumber',
+        },
+      ])
+      .select('user -_id')
+      .exec();
+    if (!cargoSupplier) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'Cargo Supplier Not Found',
+          errorCode: 'cargo_supplier_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return cargoSupplier;
+  }
+
   public async getCargoSupplierByUser(id, userId): Promise<CargoSupplierModel> {
     const user = await this.userService.idToObjectId(userId);
     const cargoSupplier = await this.cargoSupplierModel
