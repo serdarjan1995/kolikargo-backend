@@ -6,7 +6,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  IsUUID,
+  IsUUID, Max, Min,
   ValidateNested,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional, OmitType } from '@nestjs/swagger';
@@ -42,9 +42,14 @@ export class ReviewModel {
 
   @IsNotEmpty()
   @IsNumber()
+  @Min(1)
+  @Max(10)
+  @Type(() => Number)
   @ApiProperty({
     description: 'Review stars',
     default: null,
+    minimum: 0,
+    maximum: 10,
   })
   readonly stars: number;
 

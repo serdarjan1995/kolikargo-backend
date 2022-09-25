@@ -6,9 +6,12 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Max,
+  Min,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional, OmitType } from '@nestjs/swagger';
 import { Types } from 'mongoose';
+import { Type } from 'class-transformer';
 
 export class CargoSupplierModel {
   readonly _id: Types.ObjectId;
@@ -44,6 +47,9 @@ export class CargoSupplierModel {
 
   @IsOptional()
   @IsNumber()
+  @Min(1)
+  @Max(10)
+  @Type(() => Number)
   @ApiPropertyOptional({
     description: 'Number of starts received out of 10 | floating number',
   })
