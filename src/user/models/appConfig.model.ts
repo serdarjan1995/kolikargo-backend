@@ -3,7 +3,7 @@ import {
   IsBoolean,
   IsNotEmpty,
   IsNumber,
-  IsObject,
+  IsObject, IsString,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -22,6 +22,22 @@ export class AppConfigAnnouncementModel {
     description: 'messages',
   })
   readonly messages: object;
+}
+
+export class AppConfigStoreLinksModel {
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty({
+    description: 'android app link',
+  })
+  readonly android: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty({
+    description: 'ios app link',
+  })
+  readonly ios: string;
 }
 
 export class AppConfigModel {
@@ -68,4 +84,6 @@ export class AppConfigModel {
     description: 'Maintenance messages to show to users',
   })
   readonly maintenance: AppConfigAnnouncementModel;
+
+  readonly store_links: AppConfigStoreLinksModel;
 }

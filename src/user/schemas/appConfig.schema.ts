@@ -18,6 +18,24 @@ export const AppConfigAnnouncementSchema = SchemaFactory.createForClass(
 );
 
 @Schema()
+export class AppConfigStoreLinks extends Document {
+  @Prop({
+    required: true,
+    type: String,
+  })
+  ios: string;
+
+  @Prop({
+    required: true,
+    type: String,
+  })
+  android: string;
+}
+
+export const AppConfigStoreLinksSchema =
+  SchemaFactory.createForClass(AppConfigStoreLinks);
+
+@Schema()
 export class AppConfig extends Document {
   @Prop({
     required: true,
@@ -54,6 +72,12 @@ export class AppConfig extends Document {
     type: AppConfigAnnouncementSchema,
   })
   maintenance: typeof AppConfigAnnouncementSchema;
+
+  @Prop({
+    required: true,
+    type: AppConfigStoreLinksSchema,
+  })
+  store_links: typeof AppConfigStoreLinksSchema;
 }
 
 export const AppConfigSchema = SchemaFactory.createForClass(AppConfig);
