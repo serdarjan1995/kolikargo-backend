@@ -3,7 +3,9 @@ import {
   IsBoolean,
   IsNotEmpty,
   IsNumber,
-  IsObject, IsString,
+  IsObject,
+  IsString,
+  ValidateNested,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -73,6 +75,7 @@ export class AppConfigModel {
 
   @IsNotEmpty()
   @Type(() => AppConfigAnnouncementModel)
+  @ValidateNested({ each: true })
   @ApiProperty({
     description: 'Announcement messages to show to users',
   })
@@ -80,10 +83,17 @@ export class AppConfigModel {
 
   @IsNotEmpty()
   @Type(() => AppConfigAnnouncementModel)
+  @ValidateNested({ each: true })
   @ApiProperty({
     description: 'Maintenance messages to show to users',
   })
   readonly maintenance: AppConfigAnnouncementModel;
 
+  @IsNotEmpty()
+  @Type(() => AppConfigStoreLinksModel)
+  @ValidateNested({ each: true })
+  @ApiProperty({
+    description: 'App store links',
+  })
   readonly store_links: AppConfigStoreLinksModel;
 }

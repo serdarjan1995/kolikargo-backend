@@ -47,14 +47,14 @@ export class CargoSupplierModel {
   @ApiPropertyOptional({
     description: 'Number of starts received out of 10 | floating number',
   })
-  readonly stars: number;
+  stars: number;
 
   @IsOptional()
   @IsNumber()
   @ApiPropertyOptional({
     description: 'Count of comments/reviews',
   })
-  readonly reviewsCount: number;
+  reviewsCount: number;
 
   @IsArray()
   @IsOptional()

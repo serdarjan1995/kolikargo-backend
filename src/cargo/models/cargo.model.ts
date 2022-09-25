@@ -19,6 +19,7 @@ import {
 } from '../../cargo-pricing/models/cargoPricing.model';
 import { Type } from 'class-transformer';
 import { UserAddressDetailModel } from '../../user-address/models/userAddress.model';
+import { Types } from 'mongoose';
 
 export enum CARGO_STATUSES {
   NEW_REQUEST = 'NEW_REQUEST',
@@ -35,6 +36,8 @@ export enum CARGO_STATUSES {
 }
 
 export class CargoModel {
+  readonly _id: Types.ObjectId;
+
   @IsNotEmpty()
   @IsUUID()
   @ApiPropertyOptional({

@@ -16,6 +16,7 @@ import { CargoModule } from './cargo/cargo.module';
 import { AppLoggerMiddleware } from './app.middleware';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { ReviewModule } from './review/review.module';
 
 const MONGODB_URL = process.env.MONGO_URL || 'localhost';
 const MONGODB_USER = process.env.MONGODB_USER;
@@ -46,6 +47,7 @@ const MONGO_CONNECTION_STR =
     CouponModule,
     CargoPricingModule,
     CargoModule,
+    ReviewModule,
   ],
   controllers: [AppController],
   providers: [AppService],

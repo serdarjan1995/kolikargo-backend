@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CargoSupplierService } from '../cargo-supplier/cargo-supplier.service';
 import { LocationService } from '../location/location.service';
 import {
@@ -27,6 +27,7 @@ import { CargoStatusUpdatedEvent } from './events/cargo-status-updated.event';
 import { CargoTrackingModel } from './models/cargoTracking.model';
 import { CargoPublicTrackingModel } from './models/cargoPublicTracking.model';
 import { CargoSupplierModel } from '../cargo-supplier/models/cargoSupplier.model';
+import { censorString } from '../utils';
 
 const CargoModelProjection = {
   _id: false,
@@ -301,9 +302,30 @@ export class CargoService {
     return savedCargo;
   }
 
-  public async getCargo(id): Promise<CargoModel> {
+  public async getCargo(id, noProjection = false): Promise<CargoModel> {
     const cargo = await this.cargoModel
-      .findOne({ id: id }, CargoModelProjection)
+      .findOne({ id: id }, noProjection ? null : CargoModelProjection)
+      .populate(this.populateFields)
+      .exec();
+    if (!cargo) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `Cargo Not Found`,
+          errorCode: 'cargo_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return cargo;
+  }
+
+  public async getCargoByFiler(
+    filter: object,
+    noProjection = false,
+  ): Promise<CargoModel> {
+    const cargo = await this.cargoModel
+      .findOne(filter, noProjection ? null : CargoModelProjection)
       .populate(this.populateFields)
       .exec();
     if (!cargo) {
@@ -356,38 +378,33 @@ export class CargoService {
     const tracking = await this.getCargoTracking(cargo.id);
     const cargoJson = JSON.stringify(cargo);
     const cargoParsed = JSON.parse(cargoJson);
-    let starredDetail: string;
 
     if (isPublicTracking && !cargoSupplier) {
-      starredDetail = cargoParsed['pickupAddress']['contactName'];
-      starredDetail =
-        starredDetail.substring(0, 2) +
-        '*'.repeat(Math.abs(starredDetail.length - 2));
-      cargoParsed['pickupAddress']['contactName'] = starredDetail;
+      cargoParsed['pickupAddress']['contactName'] = censorString(
+        cargoParsed['pickupAddress']['contactName'],
+        2,
+      );
 
-      starredDetail = cargoParsed['pickupAddress']['contactSurname'];
-      starredDetail =
-        starredDetail.substring(0, 2) +
-        '*'.repeat(Math.abs(starredDetail.length - 2));
-      cargoParsed['pickupAddress']['contactSurname'] = starredDetail;
+      cargoParsed['pickupAddress']['contactSurname'] = censorString(
+        cargoParsed['pickupAddress']['contactSurname'],
+        2,
+      );
 
-      starredDetail = cargoParsed['pickupAddress']['contactPhoneNumber'];
-      starredDetail =
-        starredDetail.substring(0, 3) +
-        '*'.repeat(Math.abs(starredDetail.length - 5));
-      cargoParsed['pickupAddress']['contactPhoneNumber'] = starredDetail;
+      cargoParsed['pickupAddress']['contactPhoneNumber'] = censorString(
+        cargoParsed['pickupAddress']['contactPhoneNumber'],
+        3,
+        2,
+      );
 
-      starredDetail = cargoParsed['pickupAddress']['city'];
-      starredDetail =
-        starredDetail.substring(0, 3) +
-        '*'.repeat(Math.abs(starredDetail.length - 5));
-      cargoParsed['pickupAddress']['city'] = starredDetail;
+      cargoParsed['pickupAddress']['city'] = censorString(
+        cargoParsed['pickupAddress']['city'],
+        3,
+      );
 
-      starredDetail = cargoParsed['pickupAddress']['district'];
-      starredDetail =
-        starredDetail.substring(0, 3) +
-        '*'.repeat(Math.abs(starredDetail.length - 5));
-      cargoParsed['pickupAddress']['district'] = starredDetail;
+      cargoParsed['pickupAddress']['district'] = censorString(
+        cargoParsed['pickupAddress']['district'],
+        3,
+      );
 
       cargoParsed['pickupAddress']['houseNo'] = '*';
       cargoParsed['pickupAddress']['floorNo'] = '*';
@@ -395,29 +412,29 @@ export class CargoService {
       cargoParsed['pickupAddress']['addressLine'] = '*';
 
       // delivery address starring
-      starredDetail = cargoParsed['deliveryAddress']['contactName'];
-      starredDetail =
-        starredDetail.substring(0, 2) +
-        '*'.repeat(Math.abs(starredDetail.length - 2));
-      cargoParsed['deliveryAddress']['contactName'] = starredDetail;
+      cargoParsed['deliveryAddress']['contactName'] = censorString(
+        cargoParsed['deliveryAddress']['contactName'],
+        2,
+      );
 
-      starredDetail = cargoParsed['deliveryAddress']['contactSurname'];
-      starredDetail =
-        starredDetail.substring(0, 2) +
-        '*'.repeat(Math.abs(starredDetail.length - 2));
-      cargoParsed['deliveryAddress']['contactSurname'] = starredDetail;
+      cargoParsed['deliveryAddress']['contactSurname'] = censorString(
+        cargoParsed['deliveryAddress']['contactSurname'],
+        2,
+      );
 
-      starredDetail = cargoParsed['deliveryAddress']['contactPhoneNumber'];
-      starredDetail =
-        starredDetail.substring(0, 3) +
-        '*'.repeat(Math.abs(starredDetail.length - 5));
-      cargoParsed['deliveryAddress']['contactPhoneNumber'] = starredDetail;
+      cargoParsed['deliveryAddress']['contactPhoneNumber'] = censorString(
+        cargoParsed['deliveryAddress']['contactPhoneNumber'],
+        3,
+        2,
+      );
+      cargoParsed['pickupAddress']['houseNo'] = '*';
+      cargoParsed['pickupAddress']['floorNo'] = '*';
+      cargoParsed['pickupAddress']['doorNo'] = '*';
 
-      starredDetail = cargoParsed['deliveryAddress']['addressLine'];
-      starredDetail =
-        starredDetail.substring(0, 3) +
-        '*'.repeat(Math.abs(starredDetail.length - 5));
-      cargoParsed['deliveryAddress']['addressLine'] = starredDetail;
+      cargoParsed['deliveryAddress']['addressLine'] = censorString(
+        cargoParsed['deliveryAddress']['addressLine'],
+        3,
+      );
     }
     return { ...(cargoParsed as CargoModel), tracking };
   }
@@ -483,5 +500,30 @@ export class CargoService {
       }
     }
     return updatedCargo;
+  }
+
+  public async idToObjectId(id: string): Promise<Types.ObjectId> {
+    if (!id) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: `Cargo id should be specified`,
+          errorCode: 'cargo_not_found',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const cargo = await this.cargoModel.findOne({ id: id }).exec();
+    if (!cargo) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `Cargo ${id} Not Found`,
+          errorCode: 'cargo_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return cargo._id;
   }
 }

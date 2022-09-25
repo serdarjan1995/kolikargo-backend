@@ -6,6 +6,7 @@ import { CargoSupplierSchema } from './schemas/cargoSupplier.schema';
 import { LocationModule } from '../location/location.module';
 import { UserModule } from '../user/user.module';
 import { CargoPricingModule } from '../cargo-pricing/cargo-pricing.module';
+import { NewCargoSupplierReviewListener } from './listeners/new-cargo-supplier-review.listener';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { CargoPricingModule } from '../cargo-pricing/cargo-pricing.module';
     CargoPricingModule,
   ],
   controllers: [CargoSupplierController],
-  providers: [CargoSupplierService],
+  providers: [CargoSupplierService, NewCargoSupplierReviewListener],
   exports: [CargoSupplierService],
 })
 export class CargoSupplierModule {}

@@ -8,3 +8,20 @@ export const getRandomStr = (length, addLetters = false) => {
   }
   return result;
 };
+
+export const censorString = (s: string, fromStart = 2, fromEnd = 0) => {
+  if (!s?.length) return s;
+
+  let censoredString: string;
+  if (fromEnd == 0) {
+    censoredString =
+      s.substring(0, fromStart) + '*'.repeat(Math.abs(s.length - fromStart));
+  } else {
+    censoredString =
+      s.substring(0, fromStart) +
+      '*'.repeat(Math.abs(s.length - fromStart - fromEnd)) +
+      s.substring(s.length - fromEnd, s.length);
+  }
+
+  return censoredString;
+};
