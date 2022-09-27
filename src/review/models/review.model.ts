@@ -43,13 +43,13 @@ export class ReviewModel {
   @IsNotEmpty()
   @IsNumber()
   @Min(1)
-  @Max(10)
+  @Max(5)
   @Type(() => Number)
   @ApiProperty({
     description: 'Review stars',
     default: null,
-    minimum: 0,
-    maximum: 10,
+    minimum: 1,
+    maximum: 5,
   })
   readonly stars: number;
 

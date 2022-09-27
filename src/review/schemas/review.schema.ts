@@ -33,8 +33,8 @@ export class Review extends Document {
   @Prop({
     required: true,
     type: Number,
-    min: 0,
-    max: 10,
+    min: 1,
+    max: 5,
   })
   stars: number;
 

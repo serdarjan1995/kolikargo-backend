@@ -19,7 +19,7 @@ export class CargoSupplier extends Document {
   @Prop({ required: false, default: '' })
   description: string;
 
-  @Prop({ required: false, default: 0 })
+  @Prop({ required: false, default: 0, max: 5, min: 0 })
   stars: number;
 
   @Prop({ required: false, default: 0 })

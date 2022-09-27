@@ -48,10 +48,10 @@ export class CargoSupplierModel {
   @IsOptional()
   @IsNumber()
   @Min(1)
-  @Max(10)
+  @Max(5)
   @Type(() => Number)
   @ApiPropertyOptional({
-    description: 'Number of starts received out of 10 | floating number',
+    description: 'Number of starts received out of 5 | floating number',
   })
   stars: number;
 
