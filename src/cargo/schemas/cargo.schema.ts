@@ -141,6 +141,13 @@ export class Cargo extends Document {
     default: generateTrackingNumber,
   })
   trackingNumber: string;
+
+  @Prop({
+    required: false,
+    type: Boolean,
+    default: false,
+  })
+  reviewEligible: boolean;
 }
 
 export const CargoSchema = SchemaFactory.createForClass(Cargo);

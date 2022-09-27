@@ -286,7 +286,7 @@ export class CargoService {
     cargoCreatedEvent.cargoSupplierName = supplier.name;
     cargoCreatedEvent.cargoTrackingNumber = cargo.trackingNumber;
     cargoCreatedEvent.userPhoneNumber = user.phoneNumber;
-    this.eventEmitter.emit('cargo.created', cargoCreatedEvent);
+    //this.eventEmitter.emit('cargo.created', cargoCreatedEvent);
 
     // for supplier
     const supplierUser = await this.cargoSupplierService.getCargoSupplierUser(
@@ -297,7 +297,7 @@ export class CargoService {
     cargoCreatedSupplierEvent.cargoSupplierPhoneNumber =
       supplierUser.user.phoneNumber;
     cargoCreatedSupplierEvent.link = `https://api.kolikargo.com/track-cargo/${cargo.trackingNumber}?authToken=${supplier.publicAuthToken}`;
-    this.eventEmitter.emit('cargo.created.supplier', cargoCreatedSupplierEvent);
+    //this.eventEmitter.emit('cargo.created.supplier', cargoCreatedSupplierEvent);
 
     return savedCargo;
   }
@@ -461,7 +461,9 @@ export class CargoService {
   }
 
   public async updateCargo(id: string, updateParams): Promise<CargoModel> {
-    const cargo = await this.cargoModel
+    const note = updateParams?.note;
+    delete updateParams.note;
+    let cargo = await this.cargoModel
       .findOneAndUpdate({ id: id }, updateParams)
       .exec();
     if (!cargo) {
@@ -474,7 +476,7 @@ export class CargoService {
         HttpStatus.NOT_FOUND,
       );
     }
-    const updatedCargo = await this.getCargo(cargo.id);
+    let updatedCargo = await this.getCargo(cargo.id);
     if (updateParams?.status && updateParams.status != cargo.status) {
       const user = await this.userService.getUserBy({ _id: cargo.user });
       const cargoStatusUpdatedEvent = new CargoStatusUpdatedEvent();
@@ -482,11 +484,11 @@ export class CargoService {
       cargoStatusUpdatedEvent.cargoTrackingNumber = cargo.trackingNumber;
       cargoStatusUpdatedEvent.userPhoneNumber = user.phoneNumber;
       cargoStatusUpdatedEvent.status = updateParams.status;
-      this.eventEmitter.emit('cargo.status.updated', cargoStatusUpdatedEvent);
+      //this.eventEmitter.emit('cargo.status.updated', cargoStatusUpdatedEvent);
       const cargoTrackingDetail = {
         status: updateParams.status,
         datetime: new Date(),
-        note: updateParams?.note,
+        note: note,
         cargo: cargo,
       };
       const cargoTracking = await this.cargoTrackingModel.create(
@@ -496,7 +498,13 @@ export class CargoService {
       await cargoTracking.save();
 
       if (updateParams.status == CARGO_STATUSES.DELIVERED) {
-        updatedCargo.deliveredDate = new Date();
+        cargo = await this.cargoModel
+          .findOneAndUpdate(
+            { id: updatedCargo.id },
+            { deliveredDate: new Date(), reviewEligible: true },
+          )
+          .exec();
+        updatedCargo = await this.getCargo(cargo.id);
       }
     }
     return updatedCargo;

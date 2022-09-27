@@ -27,6 +27,7 @@ import {
   UpdateCargoStatusModel,
 } from './models/cargo.model';
 import { CargoPublicTrackingModel } from './models/cargoPublicTracking.model';
+import { CARGO_TYPES } from '../cargo-pricing/models/cargoPricing.model';
 
 @Controller('cargo')
 @UseGuards(RolesGuard)
@@ -124,5 +125,20 @@ export class CargoPublicTrackingController {
       true,
       query?.authToken,
     );
+  }
+}
+
+@Controller('cargo-types')
+@ApiTags('cargo')
+export class CargoTypesController {
+  constructor(private cargoService: CargoService) {}
+
+  @Get()
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: String,
+  })
+  public async getCargoTypes() {
+    return Object.values(CARGO_TYPES);
   }
 }

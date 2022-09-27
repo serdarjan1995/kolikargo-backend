@@ -3,6 +3,7 @@ import { CargoService } from './cargo.service';
 import {
   CargoController,
   CargoPublicTrackingController,
+  CargoTypesController,
 } from './cargo.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CargoSupplierModule } from '../cargo-supplier/cargo-supplier.module';
@@ -16,6 +17,7 @@ import { SmsProviderService } from './smsProvider.service';
 import { CargoCreatedListener } from './listeners/cargo-created.listener';
 import { CargoStatusUpdatedListener } from './listeners/cargo-status-updated.listener';
 import { CargoTrackingSchema } from './schemas/cargoTracking.schema';
+import { CargoTypeSchema } from './schemas/cargo-type.schema';
 
 @Module({
   imports: [
@@ -27,6 +29,10 @@ import { CargoTrackingSchema } from './schemas/cargoTracking.schema';
       {
         name: 'CargoTracking',
         schema: CargoTrackingSchema,
+      },
+      {
+        name: 'CargoType',
+        schema: CargoTypeSchema,
       },
     ]),
     CargoSupplierModule,
@@ -42,7 +48,11 @@ import { CargoTrackingSchema } from './schemas/cargoTracking.schema';
     CargoCreatedListener,
     CargoStatusUpdatedListener,
   ],
-  controllers: [CargoController, CargoPublicTrackingController],
+  controllers: [
+    CargoController,
+    CargoPublicTrackingController,
+    CargoTypesController,
+  ],
   exports: [CargoService, SmsProviderService],
 })
 export class CargoModule {}

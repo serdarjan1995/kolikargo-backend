@@ -74,6 +74,11 @@ export class ReviewService {
     );
 
     if (cargo.status !== CARGO_STATUSES.DELIVERED) {
+      if (cargo.reviewEligible) {
+        await this.cargoService.updateCargo(cargo.id, {
+          reviewEligible: false,
+        });
+      }
       throw new HttpException(
         {
           statusCode: HttpStatus.BAD_REQUEST,
@@ -109,6 +114,11 @@ export class ReviewService {
         parent: null,
       });
       if (existingReview) {
+        if (cargo.reviewEligible) {
+          await this.cargoService.updateCargo(cargo.id, {
+            reviewEligible: false,
+          });
+        }
         throw new HttpException(
           {
             statusCode: HttpStatus.BAD_REQUEST,
@@ -152,6 +162,11 @@ export class ReviewService {
       'new.cargo.supplier.review',
       newCaroSupplierReviewEvent,
     );
+    if (cargo.reviewEligible) {
+      await this.cargoService.updateCargo(cargo.id, {
+        reviewEligible: false,
+      });
+    }
     return await this.getReview(review.id);
   }
 

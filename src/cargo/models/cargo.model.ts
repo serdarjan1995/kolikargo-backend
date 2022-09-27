@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsDate,
   IsEnum,
   IsNotEmpty,
@@ -202,6 +203,14 @@ export class CargoModel {
     description: 'Tracking Number',
   })
   trackingNumber: string;
+
+  @IsNotEmpty()
+  @IsBoolean()
+  @ApiProperty({
+    description: 'Review/Feedback eligible for this cargo request',
+    default: false,
+  })
+  reviewEligible: boolean;
 }
 
 export class CreateCargoModel extends OmitType(CargoModel, [
@@ -215,6 +224,7 @@ export class CreateCargoModel extends OmitType(CargoModel, [
   'deliveredDate',
   'trackingNumber',
   'createdAt',
+  'reviewEligible',
 ] as const) {}
 
 export class UpdateCargoStatusModel extends PickType(CargoModel, [

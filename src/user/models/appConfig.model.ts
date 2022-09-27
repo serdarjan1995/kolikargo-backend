@@ -24,6 +24,13 @@ export class AppConfigAnnouncementModel {
     description: 'messages',
   })
   readonly messages: object;
+
+  @IsNotEmpty()
+  @IsObject()
+  @ApiProperty({
+    description: 'title',
+  })
+  readonly title: object;
 }
 
 export class AppConfigStoreLinksModel {
