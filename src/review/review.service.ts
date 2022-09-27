@@ -134,7 +134,7 @@ export class ReviewService {
       authorName: authorName,
     });
 
-    if (parentReviewId) {
+    if (parentReviewId || !newReview.text) {
       // if its reply from cargo supplier, mark it verified
       review.verified = true;
     }

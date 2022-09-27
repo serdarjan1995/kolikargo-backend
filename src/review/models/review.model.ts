@@ -6,7 +6,9 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  IsUUID, Max, Min,
+  IsUUID,
+  Max,
+  Min,
   ValidateNested,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional, OmitType } from '@nestjs/swagger';
