@@ -8,6 +8,9 @@ import { AuthCodeSchema } from './schemas/authCode.schema';
 import { HttpModule } from '@nestjs/axios';
 import { AppConfigService } from './appConfig.service';
 import { AppConfigSchema } from './schemas/appConfig.schema';
+import { CampaignSchema } from './schemas/campaign.schema';
+import { CampaignService } from './campaign.service';
+import { CampaignController } from './campaign.controller';
 
 @Module({
   imports: [
@@ -25,10 +28,14 @@ import { AppConfigSchema } from './schemas/appConfig.schema';
         name: 'AppConfig',
         schema: AppConfigSchema,
       },
+      {
+        name: 'Campaign',
+        schema: CampaignSchema,
+      },
     ]),
   ],
-  controllers: [UserController, AppConfigController],
-  providers: [UserService, AppConfigService],
+  controllers: [UserController, AppConfigController, CampaignController],
+  providers: [UserService, AppConfigService, CampaignService],
   exports: [UserService, AppConfigService],
 })
 export class UserModule {}
