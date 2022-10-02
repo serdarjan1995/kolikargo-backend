@@ -28,6 +28,7 @@ import { CargoTrackingModel } from './models/cargoTracking.model';
 import { CargoPublicTrackingModel } from './models/cargoPublicTracking.model';
 import { CargoSupplierModel } from '../cargo-supplier/models/cargoSupplier.model';
 import { censorString } from '../utils';
+import { CargoTypeModel, CreateUpdateCargoTypeModel } from './models/cargoType.model';
 
 const CargoModelProjection = {
   _id: false,
@@ -57,6 +58,8 @@ export class CargoService {
     private readonly cargoModel: Model<CargoModel>,
     @InjectModel('CargoTracking')
     private readonly cargoTrackingModel: Model<CargoTrackingModel>,
+    @InjectModel('CargoType')
+    private readonly cargoTypeModel: Model<CargoTypeModel>,
     private readonly cargoSupplierService: CargoSupplierService,
     private readonly locationService: LocationService,
     private readonly userAddressService: UserAddressService,
@@ -533,5 +536,57 @@ export class CargoService {
       );
     }
     return cargo._id;
+  }
+
+  public async createCargoType(
+    newCargoType: CreateUpdateCargoTypeModel,
+  ): Promise<CargoTypeModel> {
+    const cargoType = await this.cargoTypeModel.create(newCargoType);
+    await cargoType.validate();
+    await cargoType.save();
+    return await this.getCargoType(cargoType.id);
+  }
+
+  public async updateCargoType(
+    id: string,
+    updateParams,
+  ): Promise<CargoTypeModel> {
+    const cargoType = await this.cargoTypeModel
+      .findOneAndUpdate({ id: id }, updateParams)
+      .exec();
+    if (!cargoType) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `Cargo Type Not Found`,
+          errorCode: 'cargo_type_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return await this.getCargoType(cargoType.id);
+  }
+
+  public async getCargoTypes(): Promise<CargoTypeModel[]> {
+    return await this.cargoTypeModel
+      .find({}, { _id: false, __v: false })
+      .exec();
+  }
+
+  public async getCargoType(id: string): Promise<CargoTypeModel> {
+    const cargoType = await this.cargoTypeModel
+      .findOne({ id: id }, { _id: false, __v: false })
+      .exec();
+    if (!cargoType) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `Cargo Type Not Found`,
+          errorCode: 'cargo_type_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return cargoType;
   }
 }

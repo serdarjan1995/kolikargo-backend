@@ -28,6 +28,8 @@ import {
 } from './models/cargo.model';
 import { CargoPublicTrackingModel } from './models/cargoPublicTracking.model';
 import { CARGO_TYPES } from '../cargo-pricing/models/cargoPricing.model';
+import { CargoTypeModel } from './models/cargoType.model';
+import { CreateUpdateCargoTypeModel } from './models/cargoType.model';
 
 @Controller('cargo')
 @UseGuards(RolesGuard)
@@ -128,17 +130,45 @@ export class CargoPublicTrackingController {
   }
 }
 
-@Controller('cargo-types')
+@Controller('cargo-type')
 @ApiTags('cargo')
-export class CargoTypesController {
+export class CargoTypeController {
   constructor(private cargoService: CargoService) {}
 
   @Get()
   @ApiOkResponse({
     description: 'Successful Response',
-    type: String,
+    type: CargoTypeModel,
+    isArray: true,
   })
   public async getCargoTypes() {
-    return Object.values(CARGO_TYPES);
+    return await this.cargoService.getCargoTypes();
+  }
+
+  @Post()
+  @Roles(Role.Admin)
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: CargoTypeModel,
+  })
+  public async createCargoType(
+    @Request() req,
+    @Body() newCargoType: CreateUpdateCargoTypeModel,
+  ) {
+    return await this.cargoService.createCargoType(newCargoType);
+  }
+
+  @Put(':id')
+  @Roles(Role.Admin)
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: CargoTypeModel,
+  })
+  public async updateCargoType(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() updateFields: CreateUpdateCargoTypeModel,
+  ) {
+    return await this.cargoService.updateCargoType(id, updateFields);
   }
 }

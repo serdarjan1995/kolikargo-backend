@@ -22,7 +22,7 @@ export class CargoType extends Document {
   name: string;
 
   @Prop({ required: true, type: {} })
-  messages: object;
+  translations: object;
 }
 
 export const CargoTypeSchema = SchemaFactory.createForClass(CargoType);
