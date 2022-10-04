@@ -31,7 +31,7 @@ export class NewCargoSupplierReviewListener {
         id: supplier.id,
       },
       {
-        stars: newSupplierRating,
+        stars: Number(newSupplierRating.toFixed(2)),
         reviewsCount: newReviewsCount,
       },
     );

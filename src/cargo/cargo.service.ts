@@ -101,6 +101,7 @@ export class CargoService {
           user: await this.userService.idToObjectId(userId),
         },
         CargoModelProjection,
+        { sort: { createdAt: -1 } },
       )
       .populate(this.populateFields)
       .exec();
