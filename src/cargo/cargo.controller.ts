@@ -103,8 +103,17 @@ export class CargoController {
     @Request() req,
     @Param('id') id: string,
     @Body() updateFields: UpdateCargoStatusModel,
+    @Query() query,
   ) {
-    return await this.cargoService.updateCargo(id, updateFields);
+    let byTrackingNumber = false;
+    if (query?.byTrackingNumber) {
+      byTrackingNumber = true;
+    }
+    return await this.cargoService.updateCargo(
+      id,
+      updateFields,
+      byTrackingNumber,
+    );
   }
 }
 

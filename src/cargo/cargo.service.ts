@@ -466,11 +466,21 @@ export class CargoService {
       .exec();
   }
 
-  public async updateCargo(id: string, updateParams): Promise<CargoModel> {
+  public async updateCargo(
+    id: string,
+    updateParams,
+    byTrackingNumber = false,
+  ): Promise<CargoModel> {
     const note = updateParams?.note;
     delete updateParams.note;
+    const findFilter = {};
+    if (byTrackingNumber) {
+      findFilter['trackingNumber'] = id;
+    } else {
+      findFilter['id'] = id;
+    }
     let cargo = await this.cargoModel
-      .findOneAndUpdate({ id: id }, updateParams)
+      .findOneAndUpdate(findFilter, updateParams)
       .exec();
     if (!cargo) {
       throw new HttpException(
