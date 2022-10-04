@@ -121,10 +121,10 @@ export class Cargo extends Document {
   fee: number;
 
   @Prop({ required: true })
-  service_fee: number;
+  serviceFee: number;
 
   @Prop({ required: true })
-  total_fee: number;
+  totalFee: number;
 
   @Prop({ required: true })
   estimatedDeliveryDate: Date;

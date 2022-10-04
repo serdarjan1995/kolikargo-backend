@@ -28,7 +28,10 @@ import { CargoTrackingModel } from './models/cargoTracking.model';
 import { CargoPublicTrackingModel } from './models/cargoPublicTracking.model';
 import { CargoSupplierModel } from '../cargo-supplier/models/cargoSupplier.model';
 import { censorString } from '../utils';
-import { CargoTypeModel, CreateUpdateCargoTypeModel } from './models/cargoType.model';
+import {
+  CargoTypeModel,
+  CreateUpdateCargoTypeModel,
+} from './models/cargoType.model';
 
 const CargoModelProjection = {
   _id: false,
@@ -257,9 +260,8 @@ export class CargoService {
       ...newCargo,
       createdAt: new Date(),
       status: CARGO_STATUSES.NEW_REQUEST,
-      total_fee: totalFee,
-      service_fee: serviceFee,
-      fee: fee,
+      serviceFee: serviceFee.toFixed(2),
+      fee: fee.toFixed(2),
       totalFee: totalFee.toFixed(2),
       user: user._id,
       supplier: supplier._id,
