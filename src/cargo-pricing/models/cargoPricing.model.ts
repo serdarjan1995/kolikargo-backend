@@ -23,6 +23,7 @@ export enum CARGO_TYPES {
   FURNITURE_HEAVY = 'furniture_heavy',
   FOOD = 'food',
   ELECTRONICS = 'electronics',
+  HOUSEHOLD_APPLIANCES = 'household_appliances',
   SPARE_PARTS = 'spare_parts',
   COSMETICS = 'cosmetics',
   OTHER = 'other',
