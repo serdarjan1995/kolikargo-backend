@@ -142,6 +142,7 @@ export class ReviewService {
       relatedCargo: cargo._id,
       parent: parentReviewId,
       authorName: authorName,
+      createdAt: new Date(),
     });
 
     if (parentReviewId || !newReview.text) {

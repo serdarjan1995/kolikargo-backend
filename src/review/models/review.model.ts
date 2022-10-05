@@ -1,6 +1,6 @@
 import {
   IsArray,
-  IsBoolean,
+  IsBoolean, IsDate,
   IsInt,
   IsNotEmpty,
   IsNumber,
@@ -110,6 +110,13 @@ export class ReviewModel {
     default: 0,
   })
   authorName: string;
+
+  @IsNotEmpty()
+  @IsDate()
+  @ApiProperty({
+    description: 'Cargo creation date',
+  })
+  createdAt: Date;
 }
 
 export class CreateReviewModel extends OmitType(ReviewModel, [
@@ -120,4 +127,5 @@ export class CreateReviewModel extends OmitType(ReviewModel, [
   'relatedCargo',
   'verified',
   'authorName',
+  'createdAt',
 ] as const) {}

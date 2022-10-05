@@ -97,6 +97,9 @@ export class Review extends Document {
     type: String,
   })
   authorName: string;
+
+  @Prop({ required: true })
+  createdAt: Date;
 }
 
 export const ReviewSchema = SchemaFactory.createForClass(Review);
