@@ -18,9 +18,13 @@ export enum CARGO_METHODS {
 
 export enum CARGO_TYPES {
   TEXTILE = 'textile',
+  TEXTILE_SERIAL = 'textile_serial',
   FURNITURE = 'furniture',
+  FURNITURE_HEAVY = 'furniture_heavy',
   FOOD = 'food',
   ELECTRONICS = 'electronics',
+  SPARE_PARTS = 'spare_parts',
+  COSMETICS = 'cosmetics',
   OTHER = 'other',
 }
 

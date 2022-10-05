@@ -473,6 +473,7 @@ export class CargoService {
   ): Promise<CargoModel> {
     const note = updateParams?.note;
     delete updateParams.note;
+    delete updateParams.trackingNumber;
     const findFilter = {};
     if (byTrackingNumber) {
       findFilter['trackingNumber'] = id;
