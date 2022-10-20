@@ -10,23 +10,11 @@ import {
 } from 'class-validator';
 import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
+import { CARGO_TYPES, CARGO_METHODS } from '../../cargo/models/cargoType.model';
 
-export enum CARGO_METHODS {
-  AIR = 'air',
-  TRUCK = 'truck',
-}
-
-export enum CARGO_TYPES {
-  TEXTILE = 'textile',
-  TEXTILE_SERIAL = 'textile_serial',
-  FURNITURE = 'furniture',
-  FURNITURE_HEAVY = 'furniture_heavy',
-  FOOD = 'food',
-  ELECTRONICS = 'electronics',
-  HOUSEHOLD_APPLIANCES = 'household_appliances',
-  SPARE_PARTS = 'spare_parts',
-  COSMETICS = 'cosmetics',
-  OTHER = 'other',
+export enum PRICING_TYPE {
+  PER_ITEM = 'per_item',
+  PER_WEIGHT = 'per_weight',
 }
 
 export class CargoPriceFieldModel {
@@ -38,10 +26,20 @@ export class CargoPriceFieldModel {
   })
   cargoType: string;
 
+  @IsString()
+  @IsEnum(PRICING_TYPE)
+  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Cargo type',
+    example: PRICING_TYPE.PER_WEIGHT,
+    default: PRICING_TYPE.PER_WEIGHT,
+  })
+  pricingType: string;
+
   @IsNumber()
   @IsNotEmpty()
   @ApiProperty({
-    description: 'Price per weight',
+    description: 'Price per weight/item',
     example: 1.5,
   })
   readonly price: number;
@@ -83,13 +81,24 @@ export class CargoPricingModel {
   @IsArray()
   @ArrayMinSize(1)
   @ApiProperty({
-    description: 'Selected locations of the pricing',
+    description: 'Selected source locations of the pricing',
     example: [
       '9322c384-fd8e-4a13-80cd-1cbd1ef95ba8',
       '12345384-fd8e-4a13-80cd-bcda338feacd',
     ],
   })
-  locations: any[];
+  sourceLocations: any[];
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @ApiProperty({
+    description: 'Selected destination locations of the pricing',
+    example: [
+      '9322c384-fd8e-4a13-80cd-1cbd1ef95ba8',
+      '12345384-fd8e-4a13-80cd-bcda338feacd',
+    ],
+  })
+  destinationLocations: any[];
 
   @IsString()
   @IsNotEmpty()

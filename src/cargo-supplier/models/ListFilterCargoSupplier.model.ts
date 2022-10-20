@@ -8,10 +8,7 @@ import {
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {
-  CARGO_METHODS,
-  CARGO_TYPES,
-} from '../../cargo-pricing/models/cargoPricing.model';
+import { CARGO_TYPES, CARGO_METHODS } from '../../cargo/models/cargoType.model';
 
 export class ListFilterCargoSupplierModel {
   @IsString()

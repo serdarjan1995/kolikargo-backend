@@ -27,7 +27,6 @@ import {
   UpdateCargoStatusModel,
 } from './models/cargo.model';
 import { CargoPublicTrackingModel } from './models/cargoPublicTracking.model';
-import { CARGO_TYPES } from '../cargo-pricing/models/cargoPricing.model';
 import { CargoTypeModel } from './models/cargoType.model';
 import { CreateUpdateCargoTypeModel } from './models/cargoType.model';
 

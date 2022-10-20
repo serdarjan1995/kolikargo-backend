@@ -29,7 +29,11 @@ export class CargoPricingService {
       select: 'id name description avatarUrl',
     },
     {
-      path: 'locations',
+      path: 'sourceLocations',
+      select: 'id country city',
+    },
+    {
+      path: 'destinationLocations',
       select: 'id country city',
     },
   ];
@@ -69,14 +73,21 @@ export class CargoPricingService {
   ): Promise<CargoPricingModel> {
     this.validatePriceFields(newCargoPricing.prices);
 
-    newCargoPricing.locations = await this.locationService.populateLocations(
-      newCargoPricing.locations,
-    );
+    newCargoPricing.sourceLocations =
+      await this.locationService.populateLocations(
+        newCargoPricing.sourceLocations,
+      );
+
+    newCargoPricing.destinationLocations =
+      await this.locationService.populateLocations(
+        newCargoPricing.destinationLocations,
+      );
 
     newCargoPricing.supplier = await this.checkExistingCargoPricing(
       newCargoPricing.supplier,
       newCargoPricing.cargoMethod,
-      newCargoPricing.locations,
+      newCargoPricing.sourceLocations,
+      newCargoPricing.destinationLocations,
     );
 
     const cargoPricing = await this.cargoPricingModel.create(newCargoPricing);
@@ -109,37 +120,42 @@ export class CargoPricingService {
   public async checkExistingCargoPricing(
     supplierId: string,
     cargoMethod: string,
-    locations: any[],
+    sourceLocations: any[],
+    destinationLocations: any[],
     exceptId: any = null,
   ) {
     const cargoSupplierObjectId = await this.cargoSupplierService.idToObjectId(
       supplierId,
     );
 
-    const filter = {
-      cargoMethod: cargoMethod,
-      locations: { $in: locations },
-      supplier: cargoSupplierObjectId,
-    };
-
-    if (exceptId) {
-      filter['id'] = {
-        $ne: exceptId,
+    for (const sourceLocation of sourceLocations) {
+      const filter = {
+        cargoMethod: cargoMethod,
+        sourceLocations: { $in: [sourceLocation] },
+        destinationLocations: { $in: destinationLocations },
+        supplier: cargoSupplierObjectId,
       };
+
+      if (exceptId) {
+        filter['id'] = {
+          $ne: exceptId,
+        };
+      }
+
+      const existingCargoPricing = await this.filterCargoPricing(filter);
+
+      if (existingCargoPricing.length) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.BAD_REQUEST,
+            message: `The pricing for cargo method ${cargoMethod} with referenced locations already exists, please check entries`,
+            errorCode: 'cargo_pricing_for_cargo_method_exists',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
     }
 
-    const existingCargoPricing = await this.filterCargoPricing(filter);
-
-    if (existingCargoPricing.length) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: `The pricing for cargo method ${cargoMethod} with referenced location already exists, please check entries`,
-          errorCode: 'cargo_pricing_for_cargo_method_exists',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
     return cargoSupplierObjectId;
   }
 
@@ -163,15 +179,29 @@ export class CargoPricingService {
     const allCargoSupplierPricing = await this.filterCargoPricing({
       supplier: supplierObjectId,
     });
-    const allServiceLocations = allCargoSupplierPricing.map(
-      (item) => item.locations,
+
+    const allServiceSourceLocations = allCargoSupplierPricing.map(
+      (item) => item.sourceLocations,
     );
-    let locationList = [];
-    allServiceLocations.forEach((item) => {
-      locationList = locationList.concat(item);
+    const allServiceDestinationLocations = allCargoSupplierPricing.map(
+      (item) => item.destinationLocations,
+    );
+
+    let sourceLocationList = [];
+    allServiceSourceLocations.forEach((item) => {
+      sourceLocationList = sourceLocationList.concat(item);
     });
-    let locationIds = locationList.map((item) => item._id);
-    locationIds = new Array(...new Set(locationIds));
+    let sourceLocationIds = sourceLocationList.map((item) => item._id);
+    sourceLocationIds = new Array(...new Set(sourceLocationIds));
+
+    let destinationLocationList = [];
+    allServiceDestinationLocations.forEach((item) => {
+      destinationLocationList = destinationLocationList.concat(item);
+    });
+    let destinationLocationIds = destinationLocationList.map(
+      (item) => item._id,
+    );
+    destinationLocationIds = new Array(...new Set(destinationLocationIds));
 
     const allPrices = allCargoSupplierPricing.map((item) => item.prices);
     let pricesList = [];
@@ -184,7 +214,11 @@ export class CargoPricingService {
 
     await this.cargoSupplierService.updateCargoSupplierByFilter(
       { _id: supplierObjectId },
-      { serviceDestinationLocations: locationIds, minPrice: minPrice },
+      {
+        serviceSourceLocations: sourceLocationIds,
+        serviceDestinationLocations: destinationLocationIds,
+        minPrice: minPrice,
+      },
     );
   }
 
@@ -194,14 +228,20 @@ export class CargoPricingService {
   ): Promise<CargoPricingModel> {
     this.validatePriceFields(updateParams.prices);
 
-    updateParams.locations = await this.locationService.populateLocations(
-      updateParams.locations,
+    updateParams.sourceLocations = await this.locationService.populateLocations(
+      updateParams.sourceLocations,
     );
+
+    updateParams.destinationLocations =
+      await this.locationService.populateLocations(
+        updateParams.destinationLocations,
+      );
 
     updateParams.supplier = await this.checkExistingCargoPricing(
       updateParams.supplier,
       updateParams.cargoMethod,
-      updateParams.locations,
+      updateParams.sourceLocations,
+      updateParams.destinationLocations,
       id,
     );
 

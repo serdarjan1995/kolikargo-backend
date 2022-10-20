@@ -1,4 +1,6 @@
 import {
+  ArrayMinSize,
+  IsArray,
   IsBoolean,
   IsDate,
   IsEnum,
@@ -7,6 +9,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  ValidateNested,
 } from 'class-validator';
 import {
   ApiProperty,
@@ -14,13 +17,10 @@ import {
   OmitType,
   PickType,
 } from '@nestjs/swagger';
-import {
-  CARGO_METHODS,
-  CARGO_TYPES,
-} from '../../cargo-pricing/models/cargoPricing.model';
 import { Type } from 'class-transformer';
 import { UserAddressDetailModel } from '../../user-address/models/userAddress.model';
 import { Types } from 'mongoose';
+import { CARGO_METHODS, CARGO_TYPES } from './cargoType.model';
 
 export enum CARGO_STATUSES {
   NEW_REQUEST = 'NEW_REQUEST',
@@ -34,6 +34,36 @@ export enum CARGO_STATUSES {
   CANCELLED = 'CANCELLED',
   REJECTED = 'REJECTED',
   UNKNOWN = 'UNKNOWN',
+}
+
+export class CargoItemModel {
+  readonly _id: Types.ObjectId;
+
+  @IsNotEmpty()
+  @IsNumber()
+  @ApiProperty({
+    description: 'Weight of the cargo',
+    default: 1,
+  })
+  readonly weight: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  @ApiProperty({
+    description: 'Weight of the cargo',
+    default: 1,
+  })
+  readonly qty: number;
+
+  @IsNotEmpty()
+  @IsString()
+  @IsEnum(CARGO_TYPES)
+  @ApiProperty({
+    description: 'Type of the cargo to be sent',
+    enum: CARGO_TYPES,
+    example: CARGO_TYPES.TEXTILE,
+  })
+  readonly cargoType: string;
 }
 
 export class CargoModel {
@@ -55,23 +85,6 @@ export class CargoModel {
     example: CARGO_STATUSES.NEW_REQUEST,
   })
   readonly status: string;
-
-  @IsNotEmpty()
-  @IsNumber()
-  @ApiProperty({
-    description: 'Weight of the cargo',
-  })
-  readonly weight: number;
-
-  @IsNotEmpty()
-  @IsString()
-  @IsEnum(CARGO_TYPES)
-  @ApiProperty({
-    description: 'Type of the cargo to be sent',
-    enum: CARGO_TYPES,
-    example: CARGO_TYPES.TEXTILE,
-  })
-  readonly cargoType: string;
 
   @IsNotEmpty()
   @IsString()
@@ -211,6 +224,21 @@ export class CargoModel {
     default: false,
   })
   reviewEligible: boolean;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => CargoItemModel)
+  @ApiProperty({
+    description: 'Cargo prices per cargoType',
+    example: [
+      {
+        cargoType: CARGO_TYPES.ELECTRONICS,
+        price: 1.9,
+      },
+    ],
+  })
+  cargoItems: CargoItemModel[];
 }
 
 export class CreateCargoModel extends OmitType(CargoModel, [

@@ -1,10 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 import { v4 as uuidV4 } from 'uuid';
-import {
-  CARGO_METHODS,
-  CARGO_TYPES,
-} from '../../cargo-pricing/models/cargoPricing.model';
+import { CARGO_METHODS, CARGO_TYPES } from '../models/cargoType.model';
 import { CARGO_STATUSES } from '../models/cargo.model';
 import { UserAddressDetailSchema } from '../../user-address/schemas/userAddress.schema';
 import { format } from 'date-fns';
@@ -14,6 +11,31 @@ export const generateTrackingNumber = () => {
   const dateStr = format(new Date(), 'ddMMyy');
   return `${dateStr}${getRandomStr(4)}`;
 };
+
+@Schema()
+export class CargoItem extends Document {
+  @Prop({
+    required: true,
+    type: String,
+    enum: CARGO_TYPES,
+  })
+  cargoType: string;
+
+  @Prop({
+    required: true,
+    type: Number,
+  })
+  qty: number;
+
+  @Prop({
+    required: false,
+    default: 1,
+    type: Number,
+  })
+  weight: number;
+}
+
+export const CargoItemSchema = SchemaFactory.createForClass(CargoItem);
 
 @Schema()
 export class Cargo extends Document {
@@ -32,19 +54,6 @@ export class Cargo extends Document {
     enum: CARGO_STATUSES,
   })
   status: string;
-
-  @Prop({
-    required: true,
-    type: Number,
-  })
-  weight: number;
-
-  @Prop({
-    required: true,
-    type: String,
-    enum: CARGO_TYPES,
-  })
-  cargoType: string;
 
   @Prop({
     required: true,
@@ -148,6 +157,12 @@ export class Cargo extends Document {
     default: false,
   })
   reviewEligible: boolean;
+
+  @Prop({
+    required: false,
+    type: [{ type: CargoItemSchema }],
+  })
+  cargoItems: [typeof CargoItemSchema];
 }
 
 export const CargoSchema = SchemaFactory.createForClass(Cargo);

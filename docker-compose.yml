@@ -30,7 +30,7 @@ services:
       - MONGO_INITDB_ROOT_USERNAME=koliadminmng!
       - MONGO_INITDB_ROOT_PASSWORD=koliPasswd123mng!
     volumes:
-      - mongodb-data:/data/db
+      - mongodata:/data/db
     networks:
       - kolikargo-network
     ports:
@@ -88,8 +88,8 @@ services:
 
 
 volumes:
-  mongodb-data:
-    name: mongodb-data
+  mongodata:
+    name: mongodata
 
 networks:
   kolikargo-network:

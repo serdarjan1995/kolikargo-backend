@@ -31,6 +31,7 @@ import {
 } from './models/cargoPricing.model';
 import { AuthenticatedUser } from '../user/models/user.model';
 import { CargoSupplierService } from '../cargo-supplier/cargo-supplier.service';
+import { LocationService } from '../location/location.service';
 
 @Controller('cargo-pricing')
 @UseGuards(RolesGuard)
@@ -41,6 +42,7 @@ export class CargoPricingController {
   constructor(
     private cargoPricingService: CargoPricingService,
     private cargoSupplierService: CargoSupplierService,
+    private locationService: LocationService,
   ) {}
 
   @Get()
@@ -57,11 +59,23 @@ export class CargoPricingController {
   })
   public async listCargoPricing(@Query() query) {
     const supplierId = query.supplier;
+    const sourceLocation = query.sourceLocation;
+    const destinationLocation = query.destinationLocation;
     const filter = {};
     if (supplierId) {
       filter['supplier'] = await this.cargoSupplierService.idToObjectId(
         supplierId,
       );
+    }
+    if (sourceLocation) {
+      filter['sourceLocations'] = {
+        $in: [await this.locationService.idToObjectId(sourceLocation)],
+      };
+    }
+    if (destinationLocation) {
+      filter['destinationLocations'] = {
+        $in: [await this.locationService.idToObjectId(destinationLocation)],
+      };
     }
     return await this.cargoPricingService.filterCargoPricing(filter);
   }

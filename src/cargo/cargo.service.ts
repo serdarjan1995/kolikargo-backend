@@ -32,6 +32,7 @@ import {
   CargoTypeModel,
   CreateUpdateCargoTypeModel,
 } from './models/cargoType.model';
+import { PRICING_TYPE } from '../cargo-pricing/models/cargoPricing.model';
 
 const CargoModelProjection = {
   _id: false,
@@ -144,16 +145,6 @@ export class CargoService {
       newCargo.supplier,
       true,
     );
-    if (newCargo.weight < supplier.minWeight) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: `Min weight should be ${supplier.minWeight}`,
-          errorCode: 'min_weight_validation_err',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
 
     // validate source location
     const sourceLocationObjectId = await this.locationService.idToObjectId(
@@ -201,22 +192,80 @@ export class CargoService {
       {
         supplier: supplier._id,
         cargoMethod: newCargo.cargoMethod,
+        sourceLocations: { $in: [sourceLocationObjectId] },
+        destinationLocations: { $in: [destinationLocationObjectId] },
       },
       true,
     );
-    const priceSupported = cargoPricing.prices.find(
-      (p) => p.cargoType === newCargo.cargoType,
-    );
-    if (!priceSupported) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: `Cargo Type ${newCargo.cargoType} is not supported by supplier`,
-          errorCode: 'cargo_supplier_cargo_type_not_supported',
-        },
-        HttpStatus.BAD_REQUEST,
+
+    let totalFeeActual = 0;
+    let totalWeight = 0;
+    let totalQty = 0;
+    let totalQtyOfPricePerItemProduct = 0;
+    for (const cargoItem of newCargo.cargoItems) {
+      // check cargoItem.cargoType is valid for pricing ( not parent types )
+      await this.getCargoTypeByFilter({
+        name: cargoItem.cargoType,
+        hasSubType: false, // ignore parent cargo category types
+      });
+      // at this point all cargoTypes validated via above query
+
+      const priceSupported = cargoPricing.prices.find(
+        (p) => p.cargoType === cargoItem.cargoType,
       );
+      if (!priceSupported) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.BAD_REQUEST,
+            message: `Cargo Type ${cargoItem.cargoType} is not supported by supplier`,
+            errorCode: 'cargo_supplier_cargo_type_not_supported',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (
+        priceSupported.pricingType == PRICING_TYPE.PER_WEIGHT &&
+        cargoItem.weight < supplier.minWeight
+      ) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.BAD_REQUEST,
+            message: `Min weight should be ${supplier.minWeight}`,
+            errorCode: 'min_weight_validation_err',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      totalWeight += cargoItem.weight;
+      totalQty += cargoItem.qty;
+      // calculate fees
+      switch (priceSupported.pricingType) {
+        case PRICING_TYPE.PER_WEIGHT:
+          totalFeeActual += cargoItem.weight * priceSupported.price;
+          break;
+
+        case PRICING_TYPE.PER_ITEM:
+          totalQtyOfPricePerItemProduct += 1;
+          totalFeeActual += cargoItem.qty * priceSupported.price;
+          break;
+      }
     }
+
+    // calculate service fees
+    let serviceFeePerWeight = 0;
+    if (totalWeight < 10) {
+      // below 10 kg => 0.25 cent per kg
+      serviceFeePerWeight = 0.25;
+    } else if (totalWeight < 20) {
+      serviceFeePerWeight = 0.2;
+    } else if (totalWeight < 100) {
+      serviceFeePerWeight = 0.1;
+    }
+
+    const serviceFee =
+      serviceFeePerWeight * totalWeight + totalQtyOfPricePerItemProduct * 3;
 
     let coupon: CouponModel = null;
     if (newCargo?.usedCoupon) {
@@ -226,19 +275,7 @@ export class CargoService {
       } as ValidateCouponModel);
     }
 
-    let serviceFeePerWeight = 0;
-    if (newCargo.weight < 10) {
-      // below 10 kg => 0.25 cent per kg
-      serviceFeePerWeight = 0.25;
-    } else if (newCargo.weight < 20) {
-      serviceFeePerWeight = 0.2;
-    } else if (newCargo.weight < 100) {
-      serviceFeePerWeight = 0.1;
-    }
-
-    const serviceFee = serviceFeePerWeight * newCargo.weight;
-    const fee = newCargo.weight * priceSupported.price;
-    let totalFee = fee;
+    let totalFee = totalFeeActual;
     if (coupon && coupon.discountType == COUPON_DISCOUNT_TYPES.FIXED) {
       totalFee -= coupon.discountValue;
     } else if (
@@ -262,7 +299,7 @@ export class CargoService {
       createdAt: new Date(),
       status: CARGO_STATUSES.NEW_REQUEST,
       serviceFee: serviceFee.toFixed(2),
-      fee: fee.toFixed(2),
+      fee: totalFeeActual.toFixed(2),
       totalFee: totalFee.toFixed(2),
       user: user._id,
       supplier: supplier._id,
@@ -555,6 +592,11 @@ export class CargoService {
   public async createCargoType(
     newCargoType: CreateUpdateCargoTypeModel,
   ): Promise<CargoTypeModel> {
+    if (newCargoType.isSubType && newCargoType.parent) {
+      newCargoType.parent = await this.cargoTypeIdToObjectId(
+        newCargoType.parent,
+      );
+    }
     const cargoType = await this.cargoTypeModel.create(newCargoType);
     await cargoType.validate();
     await cargoType.save();
@@ -582,9 +624,20 @@ export class CargoService {
   }
 
   public async getCargoTypes(): Promise<CargoTypeModel[]> {
-    return await this.cargoTypeModel
-      .find({}, { _id: false, __v: false })
+    const cargoTypesTopTier = await this.cargoTypeModel
+      .find({ isSubType: false }, { __v: false })
       .exec();
+    const subTypeAggregated: CargoTypeModel[] = [];
+    for (let ct of cargoTypesTopTier) {
+      ct = ct.toObject();
+      if (ct.hasSubType) {
+        ct.subTypes = await this.cargoTypeModel
+          .find({ parent: ct._id }, { _id: false, __v: false })
+          .exec();
+      }
+      subTypeAggregated.push(ct);
+    }
+    return subTypeAggregated;
   }
 
   public async getCargoType(id: string): Promise<CargoTypeModel> {
@@ -602,5 +655,47 @@ export class CargoService {
       );
     }
     return cargoType;
+  }
+
+  public async getCargoTypeByFilter(filter: object): Promise<CargoTypeModel> {
+    const cargoType = await this.cargoTypeModel
+      .findOne(filter, { _id: false, __v: false })
+      .exec();
+    if (!cargoType) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `Cargo Type Not Found`,
+          errorCode: 'cargo_type_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return cargoType;
+  }
+
+  public async cargoTypeIdToObjectId(id: string): Promise<Types.ObjectId> {
+    if (!id) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: `Cargo Type id should be specified`,
+          errorCode: 'cargo_type_not_found',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const cargoType = await this.cargoTypeModel.findOne({ id: id }).exec();
+    if (!cargoType) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `Cargo Type ${id} Not Found`,
+          errorCode: 'cargo_type_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return cargoType._id;
   }
 }

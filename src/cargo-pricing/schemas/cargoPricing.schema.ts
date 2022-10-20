@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 import { v4 as uuidV4 } from 'uuid';
-import { CARGO_METHODS, CARGO_TYPES } from '../models/cargoPricing.model';
+import { CARGO_TYPES, CARGO_METHODS } from '../../cargo/models/cargoType.model';
+import { PRICING_TYPE } from '../models/cargoPricing.model';
 
 @Schema()
 export class CargoPriceField extends Document {
@@ -11,6 +12,14 @@ export class CargoPriceField extends Document {
     enum: CARGO_TYPES,
   })
   cargoType: string;
+
+  @Prop({
+    required: true,
+    type: String,
+    enum: PRICING_TYPE,
+    default: PRICING_TYPE.PER_WEIGHT,
+  })
+  pricingType: string;
 
   @Prop({ required: true })
   price: number;
@@ -54,7 +63,13 @@ export class CargoPricing extends Document {
     required: true,
     type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Location' }],
   })
-  locations: [Types.ObjectId];
+  sourceLocations: [Types.ObjectId];
+
+  @Prop({
+    required: true,
+    type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Location' }],
+  })
+  destinationLocations: [Types.ObjectId];
 }
 
 export const CargoPricingSchema = SchemaFactory.createForClass(CargoPricing);
