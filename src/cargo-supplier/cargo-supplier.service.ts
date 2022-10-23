@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
   CargoSupplierModel,
-  CreateUpdateCargoSupplierModel,
+  CreateUpdateCargoSupplierModel, UpdateCargoSupplierModel,
 } from './models/cargoSupplier.model';
 import { LocationService } from '../location/location.service';
 import { UserService } from '../user/user.service';
@@ -149,7 +149,7 @@ export class CargoSupplierService {
 
   public async updateCargoSupplier(
     id: string,
-    updateParams: CreateUpdateCargoSupplierModel,
+    updateParams: CreateUpdateCargoSupplierModel | UpdateCargoSupplierModel,
   ): Promise<CargoSupplierModel> {
     const cargoSupplier = await this.cargoSupplierModel
       .findOneAndUpdate({ id: id }, updateParams)
@@ -212,5 +212,24 @@ export class CargoSupplierService {
       );
     }
     return cargoSupplier._id;
+  }
+
+  public async validateIsOwner(id: string, userId: string) {
+    const userObjectId = await this.userService.idToObjectId(userId);
+    const cargoSupplier = await this.cargoSupplierModel
+      .findOne({ id: id, user: userObjectId })
+      .exec();
+    if (!cargoSupplier) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message:
+            'Cargo Supplier is not found or is not owner of the resource',
+          errorCode: 'cargo_supplier_not_found_or_not_owner',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return this.getCargoSupplier(cargoSupplier.id, true);
   }
 }

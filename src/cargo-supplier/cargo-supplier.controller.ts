@@ -12,7 +12,7 @@ import {
 import { CargoSupplierService } from './cargo-supplier.service';
 import {
   CargoSupplierModel,
-  CreateUpdateCargoSupplierModel,
+  CreateUpdateCargoSupplierModel, UpdateCargoSupplierModel,
 } from './models/cargoSupplier.model';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -146,10 +146,28 @@ export class CargoSupplierController {
     description: 'Successful Response',
     type: CargoSupplierModel,
   })
-  public async updateCargoSupplier(
+  public async updateCargoSupplierAdmin(
     @Param('id') id: string,
     @Body() cargoSupplier: CreateUpdateCargoSupplierModel,
   ) {
+    return this.cargoSupplierService.updateCargoSupplier(id, cargoSupplier);
+  }
+
+  @Put('edit/:id')
+  @Roles(Role.Supplier, Role.Admin)
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: CargoSupplierModel,
+  })
+  public async updateCargoSupplier(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() cargoSupplier: UpdateCargoSupplierModel,
+  ) {
+    if (!req.user.roles.includes(Role.Admin)) {
+      // validate cargoSupplier is owned by user
+      await this.cargoSupplierService.validateIsOwner(id, req.user.userId);
+    }
     return this.cargoSupplierService.updateCargoSupplier(id, cargoSupplier);
   }
 }

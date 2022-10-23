@@ -9,7 +9,7 @@ import {
   Max,
   Min,
 } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional, OmitType } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, OmitType, PickType } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { Type } from 'class-transformer';
 
@@ -167,3 +167,13 @@ export class CreateUpdateCargoSupplierModel extends OmitType(
     'publicAuthToken',
   ] as const,
 ) {}
+
+export class UpdateCargoSupplierModel extends PickType(CargoSupplierModel, [
+  'name',
+  'description',
+  'minWeight',
+  'deliveryEstimationMin',
+  'deliveryEstimationMax',
+  'freePackaging',
+  'phoneNumber',
+] as const) {}

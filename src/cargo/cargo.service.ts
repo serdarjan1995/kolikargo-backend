@@ -120,6 +120,22 @@ export class CargoService {
       .exec();
   }
 
+  public async getSupplierCargoDetail(
+    supplierId: string,
+    cargoId: string,
+  ): Promise<CargoModel> {
+    return await this.cargoModel
+      .findOne(
+        {
+          supplier: await this.cargoSupplierService.idToObjectId(supplierId),
+          id: cargoId,
+        },
+        CargoModelProjection,
+      )
+      .populate(this.populateFields)
+      .exec();
+  }
+
   public async createCargo(
     newCargo: CreateCargoModel,
     userId: string,
@@ -507,11 +523,14 @@ export class CargoService {
     id: string,
     updateParams,
     byTrackingNumber = false,
+    additionalFilter = {},
   ): Promise<CargoModel> {
     const note = updateParams?.note;
     delete updateParams.note;
     delete updateParams.trackingNumber;
-    const findFilter = {};
+    const findFilter = {
+      ...additionalFilter,
+    };
     if (byTrackingNumber) {
       findFilter['trackingNumber'] = id;
     } else {
