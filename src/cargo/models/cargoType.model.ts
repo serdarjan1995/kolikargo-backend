@@ -26,7 +26,7 @@ export enum CARGO_TYPES {
   FURNITURE_HEAVY = 'furniture_heavy',
   FOOD = 'food',
   ELECTRONICS = 'electronics',
-  ELECTRONICS_TABLET = 'electronics_tablet',
+  ELECTRONICS_TABLET = 'electronics_tablet', // TODO requiresPickupFee
   ELECTRONICS_MOBILE = 'electronics_mobile',
   ELECTRONICS_TV = 'electronics_tv',
   ELECTRONICS_COMPUTER = 'electronics_computer',
@@ -37,6 +37,22 @@ export enum CARGO_TYPES {
   DOCUMENTS = 'documents',
   MEDICINE = 'medicine',
   OTHER = 'other',
+}
+
+export class CargoTypeIconModel {
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Cargo type icon white color',
+  })
+  readonly white: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Cargo type icon dark color',
+  })
+  readonly dark: string;
 }
 
 export class CargoTypeModel {
@@ -53,9 +69,17 @@ export class CargoTypeModel {
   @IsEnum(CARGO_TYPES)
   @IsNotEmpty()
   @ApiProperty({
-    description: 'Cargo type',
+    description: 'Cargo type name',
   })
   readonly name: string;
+
+  @ValidateNested({ each: true })
+  @Type(() => CargoTypeIconModel)
+  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Cargo type icons',
+  })
+  readonly icons: CargoTypeIconModel;
 
   @IsNotEmpty()
   @IsObject()

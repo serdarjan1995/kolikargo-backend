@@ -611,6 +611,20 @@ export class CargoService {
   public async createCargoType(
     newCargoType: CreateUpdateCargoTypeModel,
   ): Promise<CargoTypeModel> {
+    const cargoTypeExists = await this.cargoTypeModel
+      .findOne({ name: newCargoType.name })
+      .exec();
+    if (cargoTypeExists) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: `CargoType ${newCargoType.name} already exists`,
+          errorCode: 'cargo_type_already_exists',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     if (newCargoType.isSubType && newCargoType.parent) {
       newCargoType.parent = await this.cargoTypeIdToObjectId(
         newCargoType.parent,

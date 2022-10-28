@@ -1,14 +1,36 @@
-import { Body, Controller, Get, Param, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { RolesGuard } from '../auth/roles.guard';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CargoService } from './cargo.service';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../auth/role.enum';
 import { AuthenticatedUser } from '../user/models/user.model';
-import { CargoModel, CreateCargoModel, UpdateCargoStatusModel } from './models/cargo.model';
+import {
+  CargoModel,
+  CreateCargoModel,
+  UpdateCargoStatusModel,
+} from './models/cargo.model';
 import { CargoPublicTrackingModel } from './models/cargoPublicTracking.model';
-import { CargoTypeModel, CreateUpdateCargoTypeModel } from './models/cargoType.model';
+import {
+  CargoTypeModel,
+  CreateUpdateCargoTypeModel,
+} from './models/cargoType.model';
 import { CargoSupplierService } from '../cargo-supplier/cargo-supplier.service';
 
 @Controller('cargo')
@@ -75,6 +97,7 @@ export class CargoController {
   })
   public async createCargo(@Request() req, @Body() cargo: CreateCargoModel) {
     const user: AuthenticatedUser = req.user;
+    // TODO : review minWeight validation
     return await this.cargoService.createCargo(cargo, user.userId);
   }
 

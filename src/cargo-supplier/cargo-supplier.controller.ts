@@ -12,7 +12,8 @@ import {
 import { CargoSupplierService } from './cargo-supplier.service';
 import {
   CargoSupplierModel,
-  CreateUpdateCargoSupplierModel, UpdateCargoSupplierModel,
+  CreateUpdateCargoSupplierModel,
+  UpdateCargoSupplierModel,
 } from './models/cargoSupplier.model';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
