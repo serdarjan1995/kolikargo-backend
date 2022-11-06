@@ -23,6 +23,9 @@ export class CargoPriceField extends Document {
 
   @Prop({ required: true })
   price: number;
+
+  @Prop({ required: true, default: false })
+  availableCourierPick: boolean;
 }
 
 export const CargoPriceFieldSchema =

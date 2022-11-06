@@ -1,6 +1,6 @@
 import {
   ArrayMinSize,
-  IsArray,
+  IsArray, IsBoolean,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -43,6 +43,15 @@ export class CargoPriceFieldModel {
     example: 1.5,
   })
   readonly price: number;
+
+  @IsBoolean()
+  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Is courier pickable from address',
+    example: false,
+    default: false,
+  })
+  readonly availableCourierPick: boolean;
 }
 
 export class CargoPricingModel {

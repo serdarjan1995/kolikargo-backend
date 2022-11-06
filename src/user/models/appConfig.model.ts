@@ -103,4 +103,12 @@ export class AppConfigModel {
     description: 'App store links',
   })
   readonly store_links: AppConfigStoreLinksModel;
+
+  @IsNotEmpty()
+  @Type(() => AppConfigAnnouncementModel)
+  @ValidateNested({ each: true })
+  @ApiProperty({
+    description: 'Not available for pickup announcement',
+  })
+  readonly notAvailableForPickUpAnnouncement: AppConfigAnnouncementModel;
 }

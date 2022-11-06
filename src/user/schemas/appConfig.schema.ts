@@ -78,6 +78,12 @@ export class AppConfig extends Document {
     type: AppConfigStoreLinksSchema,
   })
   store_links: typeof AppConfigStoreLinksSchema;
+
+  @Prop({
+    required: true,
+    type: AppConfigAnnouncementSchema,
+  })
+  notAvailableForPickUpAnnouncement: typeof AppConfigAnnouncementSchema;
 }
 
 export const AppConfigSchema = SchemaFactory.createForClass(AppConfig);
