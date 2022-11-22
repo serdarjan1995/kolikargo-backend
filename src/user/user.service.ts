@@ -6,6 +6,7 @@ import { AuthCodeModel } from './models/authCode.model';
 import { InjectTwilio, TwilioClient } from 'nestjs-twilio';
 import { Role } from '../auth/role.enum';
 import { HttpService } from '@nestjs/axios';
+import { generateCode } from '../utils';
 
 const userProjection = {
   __v: false,
@@ -160,7 +161,7 @@ export class UserService {
       .exec();
     if (!currentCode || currentCode.expires < now) {
       const useIsDev = user.roles?.includes(Role.Dev);
-      const newCode = useIsDev ? 777777 : this.generateCode(6);
+      const newCode = useIsDev ? 777777 : generateCode(6);
       const minutes = 2;
       const expiresAt = new Date(now.getTime() + minutes * 60000);
       const newData = {

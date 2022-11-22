@@ -17,6 +17,7 @@ import {
 } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { Type } from 'class-transformer';
+import { Role } from '../../auth/role.enum';
 
 export class CargoSupplierModel {
   readonly _id: Types.ObjectId;
@@ -157,6 +158,8 @@ export class CargoSupplierModel {
   serviceDestinationLocations: any[];
 
   publicAuthToken: string;
+
+  readonly roles: Role[];
 }
 
 export class CreateUpdateCargoSupplierModel extends OmitType(
@@ -170,6 +173,7 @@ export class CreateUpdateCargoSupplierModel extends OmitType(
     'serviceDestinationLocations',
     'minPrice',
     'publicAuthToken',
+    'roles',
   ] as const,
 ) {}
 
@@ -182,3 +186,26 @@ export class UpdateCargoSupplierModel extends PickType(CargoSupplierModel, [
   'freePackaging',
   'phoneNumber',
 ] as const) {}
+
+export class AuthenticatedCargoSupplier {
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty({
+    description: 'ID of the cargo supplier',
+  })
+  supplierId: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty({
+    description: 'Phone number of the supplier',
+  })
+  phoneNumber: string;
+
+  @IsNotEmpty()
+  @IsArray()
+  @ApiProperty({
+    description: 'supplier roles',
+  })
+  roles: string[];
+}

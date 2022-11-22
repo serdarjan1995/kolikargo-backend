@@ -16,12 +16,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any): Promise<AuthenticatedUser> {
-    const userData = {
+    const userFilter = {
+      phoneNumber: payload.phoneNumber,
+      id: payload.userId,
+      roles: payload.roles,
+    };
+    await this.userService.getUserBy(userFilter, true, false);
+    return {
       phoneNumber: payload.phoneNumber,
       userId: payload.userId,
       roles: payload.roles,
     };
-    await this.userService.getUserBy(userData, true, false);
-    return userData;
   }
 }

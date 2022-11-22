@@ -8,7 +8,10 @@ import {
 } from './models/cargoSupplier.model';
 import { LocationService } from '../location/location.service';
 import { UserService } from '../user/user.service';
-import { getRandomStr } from '../utils';
+import { getRandomStr, generateCode } from '../utils';
+import { JwtService } from '@nestjs/jwt';
+import { Role } from '../auth/role.enum';
+import { SupplierAuthCodeModel } from './models/supplierAuthCode.model';
 
 const cargoSupplierModelProjection = {
   _id: false,
@@ -22,8 +25,11 @@ export class CargoSupplierService {
   constructor(
     @InjectModel('CargoSupplier')
     private readonly cargoSupplierModel: Model<CargoSupplierModel>,
+    @InjectModel('SupplierAuthCode')
+    private readonly supplierAuthCodeModel: Model<SupplierAuthCodeModel>,
     private readonly locationService: LocationService,
     private readonly userService: UserService,
+    private jwtService: JwtService,
   ) {}
 
   public populateFields = [
@@ -232,5 +238,107 @@ export class CargoSupplierService {
       );
     }
     return this.getCargoSupplier(cargoSupplier.id, true);
+  }
+
+  async supplierLogin(cargoSupplier: CargoSupplierModel) {
+    const payload = {
+      phoneNumber: cargoSupplier.phoneNumber,
+      supplierId: cargoSupplier.id,
+      roles: cargoSupplier.roles,
+    };
+    return {
+      accessToken: this.jwtService.sign(payload),
+    };
+  }
+
+  async validateCargoSupplier(
+    phoneNumber: string,
+    authCode: number,
+  ): Promise<any> {
+    const cargoSupplier = await this.getCargoSupplierByFilter({
+      phoneNumber: phoneNumber,
+    });
+    if (!cargoSupplier) {
+      return null;
+    }
+    const auth = await this.getAuthCode(phoneNumber);
+    if (!auth) {
+      return null;
+    }
+    if (auth.code != authCode) {
+      return null;
+    }
+    return cargoSupplier;
+  }
+
+  async getAuthCode(phoneNumber: string): Promise<any> {
+    return await this.supplierAuthCodeModel
+      .findOne({
+        phoneNumber: phoneNumber,
+        expires: {
+          $gte: new Date(),
+        },
+      })
+      .exec();
+  }
+
+  async expireAuthCode(phoneNumber: string): Promise<any> {
+    await this.userService.expireAuthCode(phoneNumber);
+  }
+
+  async refreshCode(phoneNumber: string): Promise<any> {
+    const cargoSupplier = await this.getCargoSupplierByFilter({
+      phoneNumber: phoneNumber,
+    });
+
+    if (!cargoSupplier) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: 'Number has not been registered',
+          errorCode: 'number_not_registered',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const now = new Date();
+    const currentCode = await this.supplierAuthCodeModel
+      .findOne({ phoneNumber: phoneNumber })
+      .exec();
+    if (!currentCode || currentCode.expires < now) {
+      const useIsDev = cargoSupplier.roles?.includes(Role.Dev);
+
+      const newCode = useIsDev ? 777777 : generateCode(6);
+      const minutes = 2;
+      const expiresAt = new Date(now.getTime() + minutes * 60000);
+      const newData = {
+        expires: expiresAt,
+        code: newCode,
+        phoneNumber: phoneNumber,
+      };
+
+      if (process.env.NODE_ENV === 'production') {
+        if (!useIsDev) {
+          await this.userService.sendLoginCodeSMS(phoneNumber, newCode);
+        }
+      }
+
+      if (!currentCode) {
+        // create a new
+        const authCode = await this.supplierAuthCodeModel.create(newData);
+        return authCode.save();
+      } else {
+        // update existing
+        return this.supplierAuthCodeModel.findByIdAndUpdate(
+          currentCode.id,
+          newData,
+          {
+            new: true,
+          },
+        );
+      }
+    }
+    return null;
   }
 }

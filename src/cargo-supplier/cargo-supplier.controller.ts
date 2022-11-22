@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpException,
+  HttpStatus,
   Param,
   Post,
   Put,
@@ -23,11 +25,18 @@ import { LocationService } from '../location/location.service';
 import { ListFilterCargoSupplierModel } from './models/ListFilterCargoSupplier.model';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { CargoPricingService } from '../cargo-pricing/cargo-pricing.service';
+import { RequestCode, UserLogin } from '../user/models/user.model';
+import { UserService } from '../user/user.service';
+import { SupplierLocalAuthGuard } from './supplier-local-auth.guard';
+import { SupplierJwtAuthGuard } from './supplier-jwt-auth.guard';
+import { checkNumber } from '../utils';
 
 @Controller('cargo-supplier')
 @UseGuards(RolesGuard)
@@ -175,5 +184,81 @@ export class CargoSupplierController {
       await this.cargoSupplierService.validateIsOwner(id, req.user.userId);
     }
     return this.cargoSupplierService.updateCargoSupplier(id, cargoSupplier);
+  }
+}
+
+@Controller('cargo-supplier/auth')
+@ApiTags('cargo-supplier-auth')
+export class CargoSupplierAuthController {
+  constructor(
+    private cargoSupplierService: CargoSupplierService,
+    private userService: UserService,
+  ) {}
+
+  @Post('request-code')
+  @ApiOkResponse({
+    description: 'Successful Response',
+  })
+  public async supplierAuthRequestCode(@Body() reqCode: RequestCode) {
+    if (!reqCode.phoneNumber) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: 'Please provide phoneNumber field',
+          errorCode: 'phone_number_missing',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    checkNumber(reqCode.phoneNumber);
+
+    const authCode = await this.cargoSupplierService.refreshCode(
+      reqCode.phoneNumber,
+    );
+    if (!authCode) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: 'Please wait until previous code expires',
+          errorCode: 'login_code_request_throttled',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return { success: true };
+  }
+
+  @UseGuards(SupplierLocalAuthGuard)
+  @Post('login')
+  @ApiOkResponse({
+    description: 'Supplier Login Successful response',
+    schema: {
+      type: 'object',
+      properties: {
+        access_token: { type: 'string', description: 'Access token' },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Login Fail response',
+  })
+  @ApiBody({
+    type: UserLogin,
+  })
+  public async login(@Request() req) {
+    return this.cargoSupplierService.supplierLogin(req.user);
+  }
+
+  @UseGuards(SupplierJwtAuthGuard)
+  @Get('profile')
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: CargoSupplierModel,
+  })
+  getProfile(@Request() req) {
+    return this.cargoSupplierService.getCargoSupplierByFilter({
+      id: req.user.supplierId,
+    });
   }
 }

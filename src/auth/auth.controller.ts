@@ -28,6 +28,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { checkNumber } from '../utils';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -82,7 +83,7 @@ export class AuthController {
         HttpStatus.BAD_REQUEST,
       );
     }
-    this.checkNumber(reqCode.phoneNumber);
+    checkNumber(reqCode.phoneNumber);
 
     const authCode = await this.userService.refreshCode(reqCode.phoneNumber);
     if (!authCode) {
@@ -109,7 +110,7 @@ export class AuthController {
     },
   })
   public async register(@Body() req: UserRegister) {
-    this.checkNumber(req.phoneNumber);
+    checkNumber(req.phoneNumber);
 
     const user = await this.userService.getUserBy(
       { phoneNumber: req.phoneNumber },
@@ -130,20 +131,6 @@ export class AuthController {
       );
     }
     return { success: true };
-  }
-
-  checkNumber(phoneNumber) {
-    const regex = /^\+905[0-9]{9}$/g;
-    if (!phoneNumber.match(regex)) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: 'Invalid number. Should be +905xxxxxxxxx',
-          errorCode: 'phone_number_validation_error',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
   }
 
   @UseGuards(JwtAuthGuard)

@@ -1,37 +1,16 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Put,
-  Query,
-  Request,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
 import { RolesGuard } from '../auth/roles.guard';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import {
-  ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiOkResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { CargoService } from './cargo.service';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../auth/role.enum';
 import { AuthenticatedUser } from '../user/models/user.model';
-import {
-  CargoModel,
-  CreateCargoModel,
-  UpdateCargoStatusModel,
-} from './models/cargo.model';
+import { CargoModel, CreateCargoModel, UpdateCargoStatusModel } from './models/cargo.model';
 import { CargoPublicTrackingModel } from './models/cargoPublicTracking.model';
-import {
-  CargoTypeModel,
-  CreateUpdateCargoTypeModel,
-} from './models/cargoType.model';
+import { CargoTypeModel, CreateUpdateCargoTypeModel } from './models/cargoType.model';
 import { CargoSupplierService } from '../cargo-supplier/cargo-supplier.service';
+import { SupplierJwtAuthGuard } from '../cargo-supplier/supplier-jwt-auth.guard';
 
 @Controller('cargo')
 @UseGuards(RolesGuard)
@@ -54,39 +33,6 @@ export class CargoController {
   public async listCargo(@Request() req) {
     const user: AuthenticatedUser = req.user;
     return await this.cargoService.listUserCargos(user.userId);
-  }
-
-  @Get('/supplier/:id')
-  @Roles(Role.Supplier, Role.Admin)
-  @ApiOkResponse({
-    description: 'Successful Response',
-    type: CargoModel,
-    isArray: true,
-  })
-  public async listSupplierCargos(@Request() req, @Param('id') id: string) {
-    if (!req.user.roles.includes(Role.Admin)) {
-      // validate cargoSupplier is owned by user
-      await this.cargoSupplierService.validateIsOwner(id, req.user.userId);
-    }
-    return await this.cargoService.listSupplierCargos(id);
-  }
-
-  @Get('/supplier/:id/cargo-detail/:cargoId')
-  @Roles(Role.Supplier, Role.Admin)
-  @ApiOkResponse({
-    description: 'Successful Response',
-    type: CargoModel,
-  })
-  public async getSupplierCargoDetail(
-    @Request() req,
-    @Param('id') id: string,
-    @Param('cargoId') cargoId: string,
-  ) {
-    if (!req.user.roles.includes(Role.Admin)) {
-      // validate cargoSupplier is owned by user
-      await this.cargoSupplierService.validateIsOwner(id, req.user.userId);
-    }
-    return await this.cargoService.getSupplierCargoDetail(id, cargoId);
   }
 
   @Post()
@@ -119,35 +65,6 @@ export class CargoController {
   })
   public async getCargoTrackingByCargoId(@Param('id') id: string) {
     return await this.cargoService.getCargoTracking(id);
-  }
-
-  @Put('/supplier/:id/cargo-detail/:cargoId')
-  @Roles(Role.Admin, Role.Supplier)
-  @ApiOkResponse({
-    description: 'Successful Response',
-    type: CargoModel,
-  })
-  public async updateCargoStatusByCargoSupplier(
-    @Request() req,
-    @Param('id') id: string,
-    @Param('cargoId') cargoId: string,
-    @Body() updateFields: UpdateCargoStatusModel,
-  ) {
-    const filter = {};
-    if (!req.user.roles.includes(Role.Admin)) {
-      // validate cargoSupplier is owned by user
-      const cargoSupplier = await this.cargoSupplierService.validateIsOwner(
-        id,
-        req.user.userId,
-      );
-      filter['supplier'] = cargoSupplier._id;
-    }
-    return await this.cargoService.updateCargo(
-      cargoId,
-      updateFields,
-      false,
-      filter,
-    );
   }
 
   @Put(':id')
@@ -236,5 +153,67 @@ export class CargoTypeController {
     @Body() updateFields: CreateUpdateCargoTypeModel,
   ) {
     return await this.cargoService.updateCargoType(id, updateFields);
+  }
+}
+
+@Controller('supplier/cargo')
+@UseGuards(RolesGuard)
+@UseGuards(SupplierJwtAuthGuard)
+@ApiBearerAuth()
+@ApiTags('supplier-cargo')
+export class SupplierCargoController {
+  constructor(
+    private cargoService: CargoService,
+    private cargoSupplierService: CargoSupplierService,
+  ) {}
+
+  @Get()
+  @Roles(Role.Supplier, Role.Admin)
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: CargoModel,
+    isArray: true,
+  })
+  public async listSupplierCargos(@Request() req, @Param('id') id: string) {
+    return await this.cargoService.listSupplierCargos(req.user.supplierId);
+  }
+
+  @Get(':cargoId')
+  @Roles(Role.Supplier, Role.Admin)
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: CargoModel,
+  })
+  public async getSupplierCargoDetail(
+    @Request() req,
+    @Param('cargoId') cargoId: string,
+  ) {
+    return await this.cargoService.getSupplierCargoDetail(
+      req.user.supplierId,
+      cargoId,
+    );
+  }
+
+  @Put(':cargoId')
+  @Roles(Role.Admin, Role.Supplier)
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: CargoModel,
+  })
+  public async updateCargoStatusByCargoSupplier(
+    @Request() req,
+    @Param('cargoId') cargoId: string,
+    @Body() updateFields: UpdateCargoStatusModel,
+  ) {
+    const filter = {};
+    filter['supplier'] = await this.cargoSupplierService.idToObjectId(
+      req.user.supplierId,
+    );
+    return await this.cargoService.updateCargo(
+      cargoId,
+      updateFields,
+      false,
+      filter,
+    );
   }
 }

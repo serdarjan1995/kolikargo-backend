@@ -3,7 +3,7 @@ import { CargoService } from './cargo.service';
 import {
   CargoController,
   CargoPublicTrackingController,
-  CargoTypeController,
+  CargoTypeController, SupplierCargoController,
 } from './cargo.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CargoSupplierModule } from '../cargo-supplier/cargo-supplier.module';
@@ -52,6 +52,7 @@ import { CargoTypeSchema } from './schemas/cargoType.schema';
     CargoController,
     CargoPublicTrackingController,
     CargoTypeController,
+    SupplierCargoController,
   ],
   exports: [CargoService, SmsProviderService],
 })

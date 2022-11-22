@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 import { v4 as uuidV4 } from 'uuid';
+import { Role } from '../../auth/role.enum';
 
 @Schema()
 export class CargoSupplier extends Document {
@@ -67,6 +68,9 @@ export class CargoSupplier extends Document {
 
   @Prop({ required: false })
   publicAuthToken: string;
+
+  @Prop({ required: true })
+  roles: Role[];
 }
 
 export const CargoSupplierSchema = SchemaFactory.createForClass(CargoSupplier);
