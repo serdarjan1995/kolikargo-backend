@@ -146,10 +146,23 @@ export class CargoSupplierService {
     return cargoSupplier;
   }
 
-  public async getCargoSupplierByFilter(filter): Promise<CargoSupplierModel> {
-    const cargoSupplier = await this.cargoSupplierModel.findOne(filter).exec();
-    if (!cargoSupplier) {
-      return null;
+  public async getCargoSupplierByFilter(
+    filter,
+    raiseException = true,
+    useProjection = false,
+  ): Promise<CargoSupplierModel> {
+    const cargoSupplier = await this.cargoSupplierModel
+      .findOne(filter, useProjection ? cargoSupplierModelProjection : null)
+      .exec();
+    if (!cargoSupplier && raiseException) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `Cargo Supplier Not Found`,
+          errorCode: 'cargo_supplier_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
     return cargoSupplier;
   }

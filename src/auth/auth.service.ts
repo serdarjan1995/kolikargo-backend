@@ -2,20 +2,45 @@ import { Injectable } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { UserModel } from '../user/models/user.model';
+import { CargoSupplierModel } from '../cargo-supplier/models/cargoSupplier.model';
+import { CargoSupplierService } from '../cargo-supplier/cargo-supplier.service';
+
+export enum LoginType {
+  supplier = 'supplier',
+  customer = 'customer',
+}
 
 @Injectable()
 export class AuthService {
   constructor(
     private userService: UserService,
+    private cargoSupplierService: CargoSupplierService,
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(phoneNumber: string, authCode: number): Promise<any> {
-    const user = await this.userService.getUserBy(
-      { phoneNumber: phoneNumber },
-      true,
-      false,
-    );
+  async validateUser(
+    phoneNumber: string,
+    authCode: number,
+    type = LoginType.customer,
+  ): Promise<any> {
+    let user: CargoSupplierModel | UserModel;
+    switch (type) {
+      case LoginType.customer:
+        user = await this.userService.getUserBy(
+          { phoneNumber: phoneNumber },
+          true,
+          false,
+        );
+        break;
+      case LoginType.supplier:
+        user = await this.cargoSupplierService.getCargoSupplierByFilter(
+          { phoneNumber: phoneNumber },
+          true,
+          false,
+        );
+        break;
+    }
+
     if (!user) {
       return null;
     }
@@ -36,7 +61,7 @@ export class AuthService {
   async login(user: UserModel) {
     const payload = {
       phoneNumber: user.phoneNumber,
-      userId: user.id,
+      id: user.id,
       roles: user.roles,
     };
     return {
