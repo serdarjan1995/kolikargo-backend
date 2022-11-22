@@ -94,9 +94,14 @@ export class CargoSupplierController {
     const pricingSupplierFilter = {};
     if (cargoType) {
       // check if supplier has valid pricing to support this cargo type
-      pricingSupplierFilter['prices'] = {
-        $elemMatch: { cargoType: cargoType },
-      };
+      pricingSupplierFilter['prices'] = { $all: [] };
+      for (const c of cargoType) {
+        pricingSupplierFilter['prices']['$all'].push({
+          $elemMatch: {
+            cargoType: c,
+          },
+        });
+      }
     }
 
     if (cargoMethod) {

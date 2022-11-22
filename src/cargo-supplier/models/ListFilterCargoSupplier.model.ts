@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsBoolean,
   IsEnum,
   IsNumber,
@@ -7,7 +8,7 @@ import {
   IsUUID,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { CARGO_TYPES, CARGO_METHODS } from '../../cargo/models/cargoType.model';
 
 export class ListFilterCargoSupplierModel {
@@ -63,15 +64,16 @@ export class ListFilterCargoSupplierModel {
   })
   destinationLocation: string;
 
-  @IsString()
-  @IsEnum(CARGO_TYPES)
+  @IsArray()
+  @IsEnum(CARGO_TYPES, { each: true })
+  @Transform(({ value }) => (!Array.isArray(value) ? value.split(',') : value))
   @IsOptional()
   @ApiPropertyOptional({
     description: 'Cargo Type',
     enum: CARGO_TYPES,
     example: CARGO_TYPES.FURNITURE,
   })
-  cargoType: string;
+  cargoType: string[];
 
   @IsString()
   @IsEnum(CARGO_METHODS)
