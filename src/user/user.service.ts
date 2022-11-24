@@ -199,6 +199,7 @@ export class UserService {
 
   async sendLoginCodeSMS(phoneNumber, code) {
     const message = `${code} doğrulama kodu ile giriş yapabilirsiniz.\n\nKolikargo`;
+    console.info('sent login code', phoneNumber, message);
     return this.sendSMS(phoneNumber, message);
   }
 
@@ -207,7 +208,9 @@ export class UserService {
     const url =
       `http://panel.vatansms.com/panel/smsgonder1N.php?kno=${SMS_API_USERID}&kul_ad=${SMS_API_USERNAME}&` +
       `sifre=${SMS_API_PASSWORD}&gonderen=${SMS_API_NUMBER}&mesaj=${encodedMessage}&numaralar=${phoneNumber}&tur=Normal`;
-    return this.httpService.axiosRef.get(url);
+    const res = await this.httpService.axiosRef.get(url);
+    console.info(res.data);
+    return res;
   }
 
   public encodeSMSSpecialChars(message: string): string {
@@ -254,7 +257,7 @@ export class UserService {
 
   generateCode(length: number): number {
     if (process.env.NODE_ENV !== 'production') {
-      return 488257;
+      return 777777;
     }
     let result = '';
     const characters = '0123456789';
