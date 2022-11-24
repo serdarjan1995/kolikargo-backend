@@ -240,20 +240,6 @@ export class CargoService {
         );
       }
 
-      if (
-        priceSupported.pricingType == PRICING_TYPE.PER_WEIGHT &&
-        cargoItem.weight < supplier.minWeight
-      ) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.BAD_REQUEST,
-            message: `Min weight should be ${supplier.minWeight}`,
-            errorCode: 'min_weight_validation_err',
-          },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
       totalWeight += cargoItem.weight;
       totalQty += cargoItem.qty;
       // calculate fees
@@ -267,6 +253,17 @@ export class CargoService {
           totalFeeActual += cargoItem.qty * priceSupported.price;
           break;
       }
+    }
+
+    if (totalWeight < supplier.minWeight) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: `Min weight should be ${supplier.minWeight}`,
+          errorCode: 'min_weight_validation_err',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     // calculate service fees
