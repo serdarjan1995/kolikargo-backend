@@ -76,7 +76,7 @@ export class CargoService {
   public populateFields = [
     {
       path: 'supplier',
-      select: 'id name description avatarUrl, stars',
+      select: 'id name description avatarUrl stars',
     },
     {
       path: 'sourceLocation',
