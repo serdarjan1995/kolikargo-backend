@@ -6,6 +6,7 @@ import { CARGO_STATUSES } from '../models/cargo.model';
 import { UserAddressDetailSchema } from '../../user-address/schemas/userAddress.schema';
 import { format } from 'date-fns';
 import { getRandomStr } from '../../utils';
+import { PRICING_TYPE } from '../../cargo-pricing/models/cargoPricing.model';
 
 export const generateTrackingNumber = () => {
   const dateStr = format(new Date(), 'ddMMyy');
@@ -29,7 +30,7 @@ export class CargoItem extends Document {
 
   @Prop({
     required: true,
-    enum: CARGO_TYPES,
+    enum: PRICING_TYPE,
   })
   pricingType: string;
 
