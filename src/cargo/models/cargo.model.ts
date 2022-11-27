@@ -56,10 +56,10 @@ export class CargoItemModel {
   })
   readonly qty: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @IsEnum(PRICING_TYPE)
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Pricing type',
     default: PRICING_TYPE.PER_WEIGHT,
   })
