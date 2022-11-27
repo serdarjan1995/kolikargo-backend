@@ -3,7 +3,7 @@ import {
   IsBoolean,
   IsEnum,
   IsNotEmpty,
-  IsObject,
+  IsObject, IsOptional,
   IsString,
   IsUUID,
   ValidateNested,
@@ -87,6 +87,12 @@ export class CargoTypeModel {
     description: 'translations',
   })
   readonly translations: object;
+
+  @IsOptional()
+  @ApiProperty({
+    description: 'order',
+  })
+  readonly order: number;
 
   @IsNotEmpty()
   @IsBoolean()

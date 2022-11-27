@@ -96,7 +96,7 @@ export class CargoPricingController {
       // check if supplierId related with user associated with request
       const supplier = await this.cargoSupplierService.getCargoSupplierByUser(
         supplierId,
-        user.userId,
+        user.id,
       );
       if (!supplier) {
         throw new HttpException(
@@ -143,7 +143,7 @@ export class CargoPricingController {
       // check if supplierId related with user associated with request
       const supplier = await this.cargoSupplierService.getCargoSupplierByUser(
         supplierId,
-        user.userId,
+        user.id,
       );
       if (!supplier) {
         throw new HttpException(

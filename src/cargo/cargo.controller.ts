@@ -1,16 +1,37 @@
-import { Body, Controller, Get, Param, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { RolesGuard } from '../auth/roles.guard';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CargoService } from './cargo.service';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../auth/role.enum';
 import { AuthenticatedUser } from '../user/models/user.model';
-import { CargoModel, CreateCargoModel, UpdateCargoStatusModel } from './models/cargo.model';
+import {
+  CargoModel,
+  CreateCargoModel,
+  UpdateCargoStatusModel,
+} from './models/cargo.model';
 import { CargoPublicTrackingModel } from './models/cargoPublicTracking.model';
-import { CargoTypeModel, CreateUpdateCargoTypeModel } from './models/cargoType.model';
+import {
+  CargoTypeModel,
+  CreateUpdateCargoTypeModel,
+} from './models/cargoType.model';
 import { CargoSupplierService } from '../cargo-supplier/cargo-supplier.service';
-import { SupplierJwtAuthGuard } from '../cargo-supplier/supplier-jwt-auth.guard';
 
 @Controller('cargo')
 @UseGuards(RolesGuard)
@@ -18,10 +39,7 @@ import { SupplierJwtAuthGuard } from '../cargo-supplier/supplier-jwt-auth.guard'
 @ApiBearerAuth()
 @ApiTags('cargo')
 export class CargoController {
-  constructor(
-    private cargoService: CargoService,
-    private cargoSupplierService: CargoSupplierService,
-  ) {}
+  constructor(private cargoService: CargoService) {}
 
   @Get()
   @Roles(Role.User)
@@ -32,7 +50,7 @@ export class CargoController {
   })
   public async listCargo(@Request() req) {
     const user: AuthenticatedUser = req.user;
-    return await this.cargoService.listUserCargos(user.userId);
+    return await this.cargoService.listUserCargos(user.id);
   }
 
   @Post()
@@ -44,7 +62,7 @@ export class CargoController {
   public async createCargo(@Request() req, @Body() cargo: CreateCargoModel) {
     const user: AuthenticatedUser = req.user;
     // TODO : review minWeight validation
-    return await this.cargoService.createCargo(cargo, user.userId);
+    return await this.cargoService.createCargo(cargo, user.id);
   }
 
   @Get(':id')
@@ -58,12 +76,15 @@ export class CargoController {
   }
 
   @Get(':id/tracking')
-  @Roles(Role.User)
+  @Roles(Role.User, Role.Supplier, Role.Admin)
   @ApiOkResponse({
     description: 'Successful Response',
     type: CargoModel,
   })
-  public async getCargoTrackingByCargoId(@Param('id') id: string) {
+  public async getCargoTrackingByCargoId(
+    @Request() req,
+    @Param('id') id: string,
+  ) {
     return await this.cargoService.getCargoTracking(id);
   }
 
@@ -158,7 +179,7 @@ export class CargoTypeController {
 
 @Controller('supplier/cargo')
 @UseGuards(RolesGuard)
-@UseGuards(SupplierJwtAuthGuard)
+@UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 @ApiTags('supplier-cargo')
 export class SupplierCargoController {
@@ -174,8 +195,8 @@ export class SupplierCargoController {
     type: CargoModel,
     isArray: true,
   })
-  public async listSupplierCargos(@Request() req, @Param('id') id: string) {
-    return await this.cargoService.listSupplierCargos(req.user.supplierId);
+  public async listSupplierCargos(@Request() req) {
+    return await this.cargoService.listSupplierCargos(req.user.id);
   }
 
   @Get(':cargoId')
@@ -188,10 +209,7 @@ export class SupplierCargoController {
     @Request() req,
     @Param('cargoId') cargoId: string,
   ) {
-    return await this.cargoService.getSupplierCargoDetail(
-      req.user.supplierId,
-      cargoId,
-    );
+    return await this.cargoService.getSupplierCargoDetail(req.user.id, cargoId);
   }
 
   @Put(':cargoId')
@@ -207,7 +225,7 @@ export class SupplierCargoController {
   ) {
     const filter = {};
     filter['supplier'] = await this.cargoSupplierService.idToObjectId(
-      req.user.supplierId,
+      req.user.id,
     );
     return await this.cargoService.updateCargo(
       cargoId,

@@ -655,7 +655,7 @@ export class CargoService {
 
   public async getCargoTypes(): Promise<CargoTypeModel[]> {
     const cargoTypesTopTier = await this.cargoTypeModel
-      .find({ isSubType: false }, { __v: false })
+      .find({ isSubType: false }, { __v: false }, { sort: { order: 1 } })
       .exec();
     const subTypeAggregated: CargoTypeModel[] = [];
     for (let ct of cargoTypesTopTier) {

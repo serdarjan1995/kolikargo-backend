@@ -58,10 +58,11 @@ export class AuthService {
     await this.userService.expireAuthCode(phoneNumber);
   }
 
-  async login(user: UserModel) {
+  async login({ user, type }) {
     const payload = {
       phoneNumber: user.phoneNumber,
       id: user.id,
+      type: type,
       roles: user.roles,
     };
     return {

@@ -9,7 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from '../user/user.service';
-import { AuthService } from './auth.service';
+import { AuthService, LoginType } from './auth.service';
 import { LocalAuthGuard } from './local-auth.guard';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import {
@@ -29,6 +29,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { checkNumber } from '../utils';
+import { CargoSupplierService } from '../cargo-supplier/cargo-supplier.service';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -36,6 +37,7 @@ export class AuthController {
   constructor(
     private authService: AuthService,
     private userService: UserService,
+    private cargoSupplierService: CargoSupplierService,
   ) {}
 
   @UseGuards(LocalAuthGuard)
@@ -85,7 +87,29 @@ export class AuthController {
     }
     checkNumber(reqCode.phoneNumber);
 
-    const authCode = await this.userService.refreshCode(reqCode.phoneNumber);
+    let user;
+    switch (reqCode.type) {
+      case LoginType.customer:
+        user = await this.userService.getUserBy(
+          { phoneNumber: reqCode.phoneNumber },
+          true,
+          false,
+        );
+        break;
+      case LoginType.supplier:
+        user = await this.cargoSupplierService.getCargoSupplierByFilter(
+          { phoneNumber: reqCode.phoneNumber },
+          true,
+          false,
+        );
+        break;
+    }
+
+    const authCode = await this.userService.refreshCode(
+      reqCode.phoneNumber,
+      user,
+      reqCode.type,
+    );
     if (!authCode) {
       throw new HttpException(
         {
@@ -119,7 +143,11 @@ export class AuthController {
     if (!user) {
       await this.userService.createUser(req);
     }
-    const authCode = await this.userService.refreshCode(req.phoneNumber);
+    const authCode = await this.userService.refreshCode(
+      req.phoneNumber,
+      user,
+      LoginType.customer,
+    );
     if (!authCode) {
       throw new HttpException(
         {
@@ -141,7 +169,7 @@ export class AuthController {
     type: UserModel,
   })
   getProfile(@Request() req) {
-    return this.userService.getUserBy({ id: req.user.userId });
+    return this.userService.getUserBy({ id: req.user.id });
   }
 
   @UseGuards(JwtAuthGuard)
@@ -153,7 +181,7 @@ export class AuthController {
   })
   updateProfile(@Request() req, @Body() updateParams: UpdateUserProfileModel) {
     return this.userService.updateUser(
-      req.user.userId,
+      req.user.id,
       updateParams.name,
       updateParams.surname,
     );

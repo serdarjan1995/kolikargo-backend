@@ -1,4 +1,11 @@
-import { IsDate, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsDate,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+} from 'class-validator';
+import { LoginType } from '../../auth/auth.service';
 
 export class AuthCodeModel {
   @IsNotEmpty()
@@ -12,4 +19,9 @@ export class AuthCodeModel {
   @IsNotEmpty()
   @IsDate()
   readonly expires: Date;
+
+  @IsNotEmpty()
+  @IsString()
+  @IsEnum(LoginType)
+  readonly type: LoginType;
 }

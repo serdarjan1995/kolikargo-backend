@@ -67,7 +67,7 @@ export class ReviewController {
     @Param('id') id: string,
   ) {
     const user: AuthenticatedUser = req.user;
-    return this.reviewService.createReview(review, user.userId, id);
+    return this.reviewService.createReview(review, user.id, id);
   }
 
   @Put(':id/verify')

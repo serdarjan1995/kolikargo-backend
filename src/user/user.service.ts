@@ -7,6 +7,8 @@ import { InjectTwilio, TwilioClient } from 'nestjs-twilio';
 import { Role } from '../auth/role.enum';
 import { HttpService } from '@nestjs/axios';
 import { generateCode } from '../utils';
+import { CargoSupplierModel } from '../cargo-supplier/models/cargoSupplier.model';
+import { LoginType } from '../auth/auth.service';
 
 const userProjection = {
   __v: false,
@@ -138,23 +140,11 @@ export class UserService {
       .exec();
   }
 
-  async refreshCode(phoneNumber: string): Promise<any> {
-    const user = await this.getUserBy(
-      { phoneNumber: phoneNumber },
-      true,
-      false,
-    );
-    if (!user) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: 'Number has not been registered',
-          errorCode: 'number_not_registered',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
+  async refreshCode(
+    phoneNumber: string,
+    user: UserModel | CargoSupplierModel,
+    type: LoginType,
+  ): Promise<any> {
     const now = new Date();
     const currentCode = await this.authCodeModel
       .findOne({ phoneNumber: phoneNumber })
@@ -168,6 +158,7 @@ export class UserService {
         expires: expiresAt,
         code: newCode,
         phoneNumber: phoneNumber,
+        type: type,
       };
 
       if (process.env.NODE_ENV === 'production') {

@@ -1,13 +1,15 @@
 import {
   IsArray,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
 import { Role } from '../../auth/role.enum';
-import { ApiProperty, PickType } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PickType } from '@nestjs/swagger';
 import { Types } from 'mongoose';
+import { LoginType } from '../../auth/auth.service';
 
 export class UserModel {
   readonly _id: Types.ObjectId;
@@ -94,6 +96,15 @@ export class RequestCode {
     description: 'Phone number to login. Successful response will send sms',
   })
   phoneNumber: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @IsEnum(LoginType)
+  @ApiPropertyOptional({
+    description: 'Login type',
+    default: LoginType.customer,
+  })
+  type: LoginType = LoginType.customer;
 }
 
 export class AuthenticatedUser {
@@ -102,7 +113,15 @@ export class AuthenticatedUser {
   @ApiProperty({
     description: 'ID of the user',
   })
-  userId: string;
+  id: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @IsEnum(LoginType)
+  @ApiProperty({
+    description: 'Type of authenticated user',
+  })
+  type: LoginType;
 
   @IsNotEmpty()
   @IsArray()

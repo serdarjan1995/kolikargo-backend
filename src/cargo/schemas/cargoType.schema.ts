@@ -50,6 +50,9 @@ export class CargoType extends Document {
   @Prop({ required: true, type: {} })
   translations: object;
 
+  @Prop({ required: false })
+  order: number;
+
   @Prop({
     type: Boolean,
     default: false,

@@ -56,7 +56,7 @@ export class UserAddressController {
     }
     return await this.userAddressService.listUserAddresses(
       filter,
-      req.user.userId,
+      req.user.id,
     );
   }
 
@@ -72,7 +72,7 @@ export class UserAddressController {
   ) {
     return this.userAddressService.createUserAddress(
       userAddress,
-      req.user.userId,
+      req.user.id,
     );
   }
 
@@ -83,7 +83,7 @@ export class UserAddressController {
     type: UserAddressModel,
   })
   public async getUserAddressById(@Param('id') id: string, @Request() req) {
-    return this.userAddressService.getUserAddress(id, req.user.userId);
+    return this.userAddressService.getUserAddress(id, req.user.id);
   }
 
   @Put(':id')
@@ -99,7 +99,7 @@ export class UserAddressController {
   ) {
     return this.userAddressService.updateUserAddress(
       id,
-      req.user.userId,
+      req.user.id,
       userAddress,
     );
   }
