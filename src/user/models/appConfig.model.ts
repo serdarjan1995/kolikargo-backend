@@ -52,19 +52,19 @@ export class AppConfigStoreLinksModel {
 export class AppConfigModel {
   @IsNotEmpty()
   @IsArray()
-  @Type(() => Number)
+  @Type(() => String)
   @ApiProperty({
     description: 'Must update / forced update versions',
   })
-  readonly must_update_versions: number[];
+  readonly must_update_versions: string[];
 
   @IsNotEmpty()
   @IsArray()
-  @Type(() => Number)
+  @Type(() => String)
   @ApiProperty({
     description: 'Should update / preferred update versions',
   })
-  readonly should_update_versions: number[];
+  readonly should_update_versions: string[];
 
   @IsNotEmpty()
   @IsBoolean()
@@ -74,11 +74,11 @@ export class AppConfigModel {
   readonly forced_cache_clean: boolean;
 
   @IsNotEmpty()
-  @IsNumber()
+  @IsString()
   @ApiProperty({
     description: 'Latest version',
   })
-  readonly latest_version: number;
+  readonly latest_version: string;
 
   @IsNotEmpty()
   @Type(() => AppConfigAnnouncementModel)

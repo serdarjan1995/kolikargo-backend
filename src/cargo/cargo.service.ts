@@ -239,7 +239,7 @@ export class CargoService {
           HttpStatus.BAD_REQUEST,
         );
       }
-
+      cargoItem.pricingType = priceSupported.pricingType;
       totalWeight += cargoItem.weight;
       totalQty += cargoItem.qty;
       // calculate fees

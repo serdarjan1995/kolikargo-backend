@@ -39,21 +39,21 @@ export const AppConfigStoreLinksSchema =
 export class AppConfig extends Document {
   @Prop({
     required: true,
-    type: [Number],
+    type: [String],
   })
-  must_update_versions: [number];
+  must_update_versions: [string];
 
   @Prop({
     required: true,
-    type: [Number],
+    type: [String],
   })
-  should_update_versions: [number];
+  should_update_versions: [string];
 
   @Prop({
     required: true,
-    type: Number,
+    type: String,
   })
-  latest_version: number;
+  latest_version: string;
 
   @Prop({
     required: true,

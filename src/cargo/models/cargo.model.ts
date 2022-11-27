@@ -21,6 +21,7 @@ import { Type } from 'class-transformer';
 import { UserAddressDetailModel } from '../../user-address/models/userAddress.model';
 import { Types } from 'mongoose';
 import { CARGO_METHODS, CARGO_TYPES } from './cargoType.model';
+import { PRICING_TYPE } from '../../cargo-pricing/models/cargoPricing.model';
 
 export enum CARGO_STATUSES {
   NEW_REQUEST = 'NEW_REQUEST',
@@ -54,6 +55,15 @@ export class CargoItemModel {
     default: 1,
   })
   readonly qty: number;
+
+  @IsNotEmpty()
+  @IsString()
+  @IsEnum(PRICING_TYPE)
+  @ApiProperty({
+    description: 'Pricing type',
+    default: PRICING_TYPE.PER_WEIGHT,
+  })
+  pricingType: string;
 
   @IsNotEmpty()
   @IsString()

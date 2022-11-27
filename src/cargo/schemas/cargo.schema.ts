@@ -28,6 +28,12 @@ export class CargoItem extends Document {
   qty: number;
 
   @Prop({
+    required: true,
+    enum: CARGO_TYPES,
+  })
+  pricingType: string;
+
+  @Prop({
     required: false,
     default: 1,
     type: Number,
