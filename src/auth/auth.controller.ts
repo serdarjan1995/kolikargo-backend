@@ -113,11 +113,11 @@ export class AuthController {
     if (!authCode) {
       throw new HttpException(
         {
-          statusCode: HttpStatus.BAD_REQUEST,
+          statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
           message: 'Please wait until previous code expires',
           errorCode: 'login_code_request_throttled',
         },
-        HttpStatus.BAD_REQUEST,
+        HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
     return { success: true };
@@ -151,11 +151,11 @@ export class AuthController {
     if (!authCode) {
       throw new HttpException(
         {
-          statusCode: HttpStatus.BAD_REQUEST,
+          statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
           message: 'Please wait until previous code expires',
           errorCode: 'login_code_request_throttled',
         },
-        HttpStatus.BAD_REQUEST,
+        HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
     return { success: true };
