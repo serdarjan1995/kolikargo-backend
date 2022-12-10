@@ -54,10 +54,7 @@ export class UserAddressController {
     if (query?.type) {
       filter['type'] = query?.type;
     }
-    return await this.userAddressService.listUserAddresses(
-      filter,
-      req.user.id,
-    );
+    return await this.userAddressService.listUserAddresses(filter, req.user.id);
   }
 
   @Post()
@@ -70,10 +67,7 @@ export class UserAddressController {
     @Request() req,
     @Body() userAddress: CreateUserAddressModel,
   ) {
-    return this.userAddressService.createUserAddress(
-      userAddress,
-      req.user.id,
-    );
+    return this.userAddressService.createUserAddress(userAddress, req.user.id);
   }
 
   @Get(':id')

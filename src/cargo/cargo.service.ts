@@ -33,6 +33,8 @@ import {
   CreateUpdateCargoTypeModel,
 } from './models/cargoType.model';
 import { PRICING_TYPE } from '../cargo-pricing/models/cargoPricing.model';
+import { ListFilterSupplierCargosModel } from './models/ListFilterSupplierCargos.model';
+import { SupplierCargoStatsModel } from './models/SupplierCargoStats.model';
 
 const CargoModelProjection = {
   _id: false,
@@ -108,15 +110,32 @@ export class CargoService {
       .exec();
   }
 
-  public async listSupplierCargos(supplierId: string): Promise<CargoModel[]> {
+  public async listSupplierCargos(
+    supplierId: string,
+    query: ListFilterSupplierCargosModel,
+  ): Promise<CargoModel[]> {
+    const filter = {
+      supplier: await this.cargoSupplierService.idToObjectId(supplierId),
+    };
+    if (query.startDate) {
+      filter['createdAt'] = { $gte: query.startDate };
+    }
+    if (query.endDate) {
+      filter['createdAt'] = { $lte: query.endDate };
+    }
+    if (query.status) {
+      filter['status'] = query.status;
+    }
+
+    const pageNum = parseInt(query.page as any) || 1;
+    const perPage = parseInt(query.perPage as any) || 10;
+
     return await this.cargoModel
-      .find(
-        {
-          supplier: await this.cargoSupplierService.idToObjectId(supplierId),
-        },
-        CargoModelProjection,
-      )
+      .find(filter, CargoModelProjection)
       .populate(this.populateFields)
+      .sort({ createdAt: 'desc' })
+      .skip((pageNum - 1) * perPage)
+      .limit(perPage)
       .exec();
   }
 
@@ -727,5 +746,47 @@ export class CargoService {
       );
     }
     return cargoType._id;
+  }
+
+  public async supplierCargoStats(
+    supplierId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<SupplierCargoStatsModel> {
+    const filter = {
+      supplier: await this.cargoSupplierService.idToObjectId(supplierId),
+      createdAt: { $gte: startDate, $lte: endDate },
+    };
+
+    const cargos = await this.cargoModel
+      .find(filter)
+      .populate(this.populateFields)
+      .exec();
+
+    const newCargos = cargos.filter(
+      (c) => c.status == CARGO_STATUSES.NEW_REQUEST,
+    );
+    const deliveredCargos = cargos.filter(
+      (c) => c.status == CARGO_STATUSES.DELIVERED,
+    );
+    const notInProgressStatuses = [
+      CARGO_STATUSES.NEW_REQUEST,
+      CARGO_STATUSES.DELIVERED,
+      CARGO_STATUSES.CANCELLED,
+      CARGO_STATUSES.REJECTED,
+    ];
+    const inProgressCargos = cargos.filter(
+      (c) => !notInProgressStatuses.includes(<CARGO_STATUSES>c.status),
+    );
+
+    const stat = new SupplierCargoStatsModel();
+    stat.totalCargos = cargos.length;
+    stat.newCargos = newCargos.length;
+    stat.inProgressCargos = inProgressCargos.length;
+    stat.deliveredCargos = deliveredCargos.length;
+    stat.profit = 0;
+    stat.commissionPayments = 0;
+
+    return stat;
   }
 }

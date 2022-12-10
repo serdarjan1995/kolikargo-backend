@@ -3,7 +3,8 @@ import { CargoService } from './cargo.service';
 import {
   CargoController,
   CargoPublicTrackingController,
-  CargoTypeController, SupplierCargoController,
+  CargoTypeController,
+  SupplierCargoController,
 } from './cargo.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CargoSupplierModule } from '../cargo-supplier/cargo-supplier.module';

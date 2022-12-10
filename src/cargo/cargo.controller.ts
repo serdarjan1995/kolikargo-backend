@@ -32,6 +32,9 @@ import {
   CreateUpdateCargoTypeModel,
 } from './models/cargoType.model';
 import { CargoSupplierService } from '../cargo-supplier/cargo-supplier.service';
+import { ListFilterSupplierCargosModel } from './models/ListFilterSupplierCargos.model';
+import { SupplierCargoStatsModel } from './models/SupplierCargoStats.model';
+import { StartDateEndDateQueryModel } from './models/startDateEndDate.model';
 
 @Controller('cargo')
 @UseGuards(RolesGuard)
@@ -188,6 +191,23 @@ export class SupplierCargoController {
     private cargoSupplierService: CargoSupplierService,
   ) {}
 
+  @Get('stats')
+  @Roles(Role.Supplier, Role.Admin)
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: SupplierCargoStatsModel,
+  })
+  public async getSupplierStats(
+    @Request() req,
+    @Query() query: StartDateEndDateQueryModel,
+  ) {
+    return await this.cargoService.supplierCargoStats(
+      req.user.id,
+      query.startDate,
+      query.endDate,
+    );
+  }
+
   @Get()
   @Roles(Role.Supplier, Role.Admin)
   @ApiOkResponse({
@@ -195,8 +215,11 @@ export class SupplierCargoController {
     type: CargoModel,
     isArray: true,
   })
-  public async listSupplierCargos(@Request() req) {
-    return await this.cargoService.listSupplierCargos(req.user.id);
+  public async listSupplierCargos(
+    @Request() req,
+    @Query() query: ListFilterSupplierCargosModel,
+  ) {
+    return await this.cargoService.listSupplierCargos(req.user.id, query);
   }
 
   @Get(':cargoId')
