@@ -9,12 +9,12 @@ import {
 import { LocationService } from '../location/location.service';
 import { UserService } from '../user/user.service';
 import { getRandomStr } from '../utils';
-import { JwtService } from '@nestjs/jwt';
 
 const cargoSupplierModelProjection = {
   _id: false,
   __v: false,
   user: false,
+  roles: false,
   publicAuthToken: false,
 };
 

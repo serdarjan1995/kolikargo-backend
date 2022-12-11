@@ -168,8 +168,18 @@ export class AuthController {
     description: 'Successful Response',
     type: UserModel,
   })
-  getProfile(@Request() req) {
-    return this.userService.getUserBy({ id: req.user.id });
+  async getProfile(@Request() req) {
+    switch (req.user.type) {
+      case LoginType.customer:
+        return await this.userService.getUserBy({ id: req.user.id });
+      case LoginType.supplier:
+        return await this.cargoSupplierService.getCargoSupplierByFilter(
+          { phoneNumber: req.user.phoneNumber },
+          true,
+          true,
+        );
+    }
+    return null;
   }
 
   @UseGuards(JwtAuthGuard)
