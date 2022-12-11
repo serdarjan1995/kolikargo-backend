@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpException,
+  HttpStatus,
   Param,
   Post,
   Put,
@@ -22,6 +24,7 @@ import { Roles } from '../auth/roles.decorator';
 import { Role } from '../auth/role.enum';
 import { AuthenticatedUser } from '../user/models/user.model';
 import {
+  CARGO_STATUSES,
   CargoModel,
   CreateCargoModel,
   UpdateCargoStatusModel,
@@ -250,6 +253,24 @@ export class SupplierCargoController {
     filter['supplier'] = await this.cargoSupplierService.idToObjectId(
       req.user.id,
     );
+
+    const cargo = await this.cargoService.getCargoByFiler({ id: cargoId });
+    const unchangeable_statuses = [
+      CARGO_STATUSES.DELIVERED,
+      CARGO_STATUSES.REJECTED,
+      CARGO_STATUSES.CANCELLED,
+    ];
+    if (unchangeable_statuses.includes(<CARGO_STATUSES>cargo.status)) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: `Cargo status cannot be changed`,
+          errorCode: 'cargo_status_cannot_be_changed',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     return await this.cargoService.updateCargo(
       cargoId,
       updateFields,
