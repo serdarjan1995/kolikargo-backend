@@ -126,6 +126,29 @@ export class CargoService {
     if (query.status) {
       filter['status'] = query.status;
     }
+    if (query.trackingNumber) {
+      filter['trackingNumber'] = {
+        $regex: `.*${query.trackingNumber}.*`,
+        $options: 'i',
+      };
+    }
+
+    if (query.contactName) {
+      filter['$or'] = [
+        {
+          'pickupAddress.contactName': {
+            $regex: `.*${query.contactName}.*`,
+            $options: 'i',
+          },
+        },
+        {
+          'pickupAddress.contactSurname': {
+            $regex: `.*${query.contactName}.*`,
+            $options: 'i',
+          },
+        },
+      ];
+    }
 
     const pageNum = parseInt(query.page as any) || 1;
     const perPage = parseInt(query.perPage as any) || 10;
@@ -308,14 +331,18 @@ export class CargoService {
     }
 
     let totalFee = totalFeeActual;
+    let couponValue = 0;
     if (coupon && coupon.discountType == COUPON_DISCOUNT_TYPES.FIXED) {
-      totalFee -= coupon.discountValue;
+      couponValue = coupon.discountValue;
     } else if (
       coupon &&
       coupon.discountType == COUPON_DISCOUNT_TYPES.PERCENTAGE
     ) {
-      totalFee -= totalFee * (coupon.discountValue / 100);
+      couponValue = totalFee * (coupon.discountValue / 100);
     }
+
+    totalFee -= couponValue;
+
     if (totalFee < 0) {
       totalFee = 0;
     }
@@ -328,6 +355,7 @@ export class CargoService {
 
     const cargoDetailsFinal = {
       ...newCargo,
+      usedCouponValue: couponValue,
       createdAt: new Date(),
       status: CARGO_STATUSES.NEW_REQUEST,
       serviceFee: serviceFee.toFixed(2),

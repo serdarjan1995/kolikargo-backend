@@ -35,6 +35,22 @@ export class ListFilterSupplierCargosModel {
   })
   readonly status: string;
 
+  @IsString()
+  @IsOptional()
+  @Type(() => String)
+  @ApiPropertyOptional({
+    name: 'Cargo tracking number to filter',
+  })
+  readonly trackingNumber: string;
+
+  @IsString()
+  @IsOptional()
+  @Type(() => String)
+  @ApiPropertyOptional({
+    name: 'Contact name (sender) to filter',
+  })
+  readonly contactName: string;
+
   @IsNumber()
   @IsOptional()
   @Type(() => Number)

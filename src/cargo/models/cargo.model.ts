@@ -178,6 +178,13 @@ export class CargoModel {
   })
   readonly usedCoupon: string;
 
+  @IsNumber()
+  @IsOptional()
+  @ApiPropertyOptional({
+    description: 'Used coupon',
+  })
+  readonly usedCouponValue: number;
+
   @IsNotEmpty()
   @IsNumber()
   @ApiProperty({
@@ -263,6 +270,7 @@ export class CreateCargoModel extends OmitType(CargoModel, [
   'trackingNumber',
   'createdAt',
   'reviewEligible',
+  'usedCouponValue',
 ] as const) {}
 
 export class UpdateCargoStatusModel extends PickType(CargoModel, [

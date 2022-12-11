@@ -133,6 +133,12 @@ export class Cargo extends Document {
   })
   usedCoupon: string;
 
+  @Prop({
+    required: false,
+    type: Number,
+  })
+  usedCouponValue: number;
+
   @Prop({ required: true })
   fee: number;
 
