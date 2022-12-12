@@ -28,6 +28,10 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CargoPricingService } from '../cargo-pricing/cargo-pricing.service';
+import {
+  CargoSupplierCommissionsModel,
+  CreateCargoSupplierCommissionModel,
+} from './models/cargoSupplierCommissions.model';
 
 @Controller('cargo-supplier')
 @UseGuards(RolesGuard)
@@ -121,6 +125,65 @@ export class CargoSupplierController {
     }
 
     return await this.cargoSupplierService.getCargoSuppliers(filter);
+  }
+
+  @Get('commissions')
+  @Roles(Role.Admin)
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: CargoSupplierCommissionsModel,
+    isArray: true,
+  })
+  public async listCargoSupplierCommissions() {
+    return await this.cargoSupplierService.getSupplierCommissions({});
+  }
+
+  @Get(':id/commissions')
+  @Roles(Role.Admin)
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: CargoSupplierCommissionsModel,
+  })
+  public async getCargoSupplierCommission(@Param('id') id: string) {
+    const supplierObjectId = await this.cargoSupplierService.idToObjectId(id);
+    return await this.cargoSupplierService.getSupplierCommissionByFilter({
+      supplier: supplierObjectId,
+    });
+  }
+
+  @Put(':id/commissions')
+  @Roles(Role.Admin)
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: CargoSupplierCommissionsModel,
+  })
+  public async updateCargoSupplierCommission(
+    @Param('id') id: string,
+    @Body() updateParams: CreateCargoSupplierCommissionModel,
+  ) {
+    const supplierObjectId = await this.cargoSupplierService.idToObjectId(id);
+    return await this.cargoSupplierService.updateCargoSupplierCommission(
+      supplierObjectId,
+      updateParams,
+    );
+  }
+
+  @Post(':id/commissions')
+  @Roles(Role.Admin)
+  @ApiCreatedResponse({
+    description: 'Successful response',
+    type: CargoSupplierCommissionsModel,
+  })
+  public async createCargoSupplierCommission(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() cargoSupplierCommission: CreateCargoSupplierCommissionModel,
+  ) {
+    const supplierObjectId = await this.cargoSupplierService.idToObjectId(id);
+    return this.cargoSupplierService.createCargoSupplierCommission(
+      supplierObjectId,
+      cargoSupplierCommission,
+    );
   }
 
   @Post()
