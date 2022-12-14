@@ -13,31 +13,22 @@ import {
 } from '@nestjs/common';
 import { RolesGuard } from '../auth/roles.guard';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import {
-  ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiOkResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { CargoService } from './cargo.service';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../auth/role.enum';
 import { AuthenticatedUser } from '../user/models/user.model';
-import {
-  CARGO_STATUSES,
-  CargoModel,
-  CreateCargoModel,
-  UpdateCargoStatusModel,
-} from './models/cargo.model';
+import { CARGO_STATUSES, CargoModel, CreateCargoModel, UpdateCargoStatusModel } from './models/cargo.model';
 import { CargoPublicTrackingModel } from './models/cargoPublicTracking.model';
-import {
-  CargoTypeModel,
-  CreateUpdateCargoTypeModel,
-} from './models/cargoType.model';
+import { CargoTypeModel, CreateUpdateCargoTypeModel } from './models/cargoType.model';
 import { CargoSupplierService } from '../cargo-supplier/cargo-supplier.service';
 import { ListFilterSupplierCargosModel } from './models/ListFilterSupplierCargos.model';
 import { SupplierCargoStatsModel } from './models/SupplierCargoStats.model';
 import { StartDateEndDateQueryModel } from './models/startDateEndDate.model';
+import {
+  CargoStatusChangeActionModel,
+  CreateCargoStatusChangeActionModel,
+} from './models/cargoStatusChangeAction.model';
 
 @Controller('cargo')
 @UseGuards(RolesGuard)
@@ -277,5 +268,42 @@ export class SupplierCargoController {
       false,
       filter,
     );
+  }
+}
+
+@Controller('cargo-actions')
+@UseGuards(RolesGuard)
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+@ApiTags('cargo-actions')
+export class CargoStatusChangeActionController {
+  constructor(private cargoService: CargoService) {}
+
+  @Post('status-change')
+  @Roles(Role.Admin)
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: CargoStatusChangeActionModel,
+  })
+  public async createCargoStatusChangeAction(
+    @Request() req,
+    @Body() newCargoStatusChangeAction: CreateCargoStatusChangeActionModel,
+  ) {
+    return await this.cargoService.createCargoStatusChangeAction(
+      newCargoStatusChangeAction,
+    );
+  }
+
+  @Get('status-change')
+  @Roles(Role.Admin, Role.Supplier)
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: CargoStatusChangeActionModel,
+  })
+  public async getCargoStatusChangeAction(
+    @Request() req,
+    @Query('fromStatus') fromStatus: CARGO_STATUSES,
+  ) {
+    return await this.cargoService.getCargoStatusChangeAction(fromStatus);
   }
 }

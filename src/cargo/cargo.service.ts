@@ -35,6 +35,10 @@ import {
 import { PRICING_TYPE } from '../cargo-pricing/models/cargoPricing.model';
 import { ListFilterSupplierCargosModel } from './models/ListFilterSupplierCargos.model';
 import { SupplierCargoStatsModel } from './models/SupplierCargoStats.model';
+import {
+  CargoStatusChangeActionModel,
+  CreateCargoStatusChangeActionModel,
+} from './models/cargoStatusChangeAction.model';
 
 const CargoModelProjection = {
   _id: false,
@@ -57,6 +61,11 @@ const CargoTrackingModelProjection = {
   cargo: false,
 };
 
+const CargoStatusChangeActionProjection = {
+  _id: false,
+  __v: false,
+};
+
 @Injectable()
 export class CargoService {
   constructor(
@@ -66,6 +75,8 @@ export class CargoService {
     private readonly cargoTrackingModel: Model<CargoTrackingModel>,
     @InjectModel('CargoType')
     private readonly cargoTypeModel: Model<CargoTypeModel>,
+    @InjectModel('CargoStatusChangeAction')
+    private readonly cargoStatusChangeActionModel: Model<CargoStatusChangeActionModel>,
     private readonly cargoSupplierService: CargoSupplierService,
     private readonly locationService: LocationService,
     private readonly userAddressService: UserAddressService,
@@ -816,5 +827,60 @@ export class CargoService {
     stat.commissionPayments = 0;
 
     return stat;
+  }
+
+  public async createCargoStatusChangeAction(
+    newCargoStatusChangeAction: CreateCargoStatusChangeActionModel,
+  ): Promise<CargoStatusChangeActionModel> {
+    const existingCargoStatusChangeAction =
+      await this.getCargoStatusChangeAction(
+        <CARGO_STATUSES>newCargoStatusChangeAction.fromStatus,
+        false
+      );
+    if (existingCargoStatusChangeAction) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: `Cargo Status Change Action already exists`,
+          errorCode: 'cargo_status_change_action_already_exists',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const cargoStatusChangeAction =
+      await this.cargoStatusChangeActionModel.create(
+        newCargoStatusChangeAction,
+      );
+    await cargoStatusChangeAction.validate();
+    await cargoStatusChangeAction.save();
+
+    return await this.getCargoStatusChangeAction(
+      <CARGO_STATUSES>cargoStatusChangeAction.fromStatus,
+    );
+  }
+
+  public async getCargoStatusChangeAction(
+    status: CARGO_STATUSES,
+    raiseException = true,
+  ): Promise<CargoStatusChangeActionModel> {
+    const cargoStatusChangeAction =
+      await this.cargoStatusChangeActionModel.findOne(
+        { fromStatus: status },
+        CargoStatusChangeActionProjection,
+      );
+
+    if (!cargoStatusChangeAction && raiseException) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `Cargo Status Change Action Not Found`,
+          errorCode: 'cargo_status_change_action_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    return cargoStatusChangeAction;
   }
 }
