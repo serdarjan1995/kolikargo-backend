@@ -7,6 +7,7 @@ import {
   CARGO_STATUSES,
   CargoModel,
   CreateCargoModel,
+  TRIGGER_CONFIRMED_STATUSES_FOR_COMMISSION,
 } from './models/cargo.model';
 import { UserAddressService } from '../user-address/user-address.service';
 import { CouponService } from '../coupon/coupon.service';
@@ -34,11 +35,11 @@ import {
 } from './models/cargoType.model';
 import { PRICING_TYPE } from '../cargo-pricing/models/cargoPricing.model';
 import { ListFilterSupplierCargosModel } from './models/ListFilterSupplierCargos.model';
-import { SupplierCargoStatsModel } from './models/SupplierCargoStats.model';
 import {
   CargoStatusChangeActionModel,
   CreateCargoStatusChangeActionModel,
 } from './models/cargoStatusChangeAction.model';
+import { CargoApplyCommissionsEvent } from './events/cargo-apply-commissions.event';
 
 const CargoModelProjection = {
   _id: false,
@@ -101,9 +102,22 @@ export class CargoService {
     },
   ];
 
-  public async filterCargo(filter: object): Promise<CargoModel[]> {
+  public async findOneCargoByFilter(
+    filter: object,
+    noProjection = false,
+  ): Promise<CargoModel> {
     return await this.cargoModel
-      .find(filter, CargoModelProjection)
+      .findOne(filter, noProjection ? null : CargoModelProjection)
+      .populate(this.populateFields)
+      .exec();
+  }
+
+  public async filterCargo(
+    filter: object,
+    noProjection = false,
+  ): Promise<CargoModel[]> {
+    return await this.cargoModel
+      .find(filter, noProjection ? null : CargoModelProjection)
       .populate(this.populateFields)
       .exec();
   }
@@ -634,6 +648,17 @@ export class CargoService {
           .exec();
         updatedCargo = await this.getCargo(cargo.id);
       }
+      if (
+        cargo.status == CARGO_STATUSES.NEW_REQUEST &&
+        TRIGGER_CONFIRMED_STATUSES_FOR_COMMISSION.includes(updateParams.status)
+      ) {
+        const cargoApplyCommissionEvent = new CargoApplyCommissionsEvent();
+        cargoApplyCommissionEvent.cargoId = cargo.id;
+        this.eventEmitter.emit(
+          'cargo.apply.commissions',
+          cargoApplyCommissionEvent,
+        );
+      }
     }
     return updatedCargo;
   }
@@ -787,55 +812,13 @@ export class CargoService {
     return cargoType._id;
   }
 
-  public async supplierCargoStats(
-    supplierId: string,
-    startDate: Date,
-    endDate: Date,
-  ): Promise<SupplierCargoStatsModel> {
-    const filter = {
-      supplier: await this.cargoSupplierService.idToObjectId(supplierId),
-      createdAt: { $gte: startDate, $lte: endDate },
-    };
-
-    const cargos = await this.cargoModel
-      .find(filter)
-      .populate(this.populateFields)
-      .exec();
-
-    const newCargos = cargos.filter(
-      (c) => c.status == CARGO_STATUSES.NEW_REQUEST,
-    );
-    const deliveredCargos = cargos.filter(
-      (c) => c.status == CARGO_STATUSES.DELIVERED,
-    );
-    const notInProgressStatuses = [
-      CARGO_STATUSES.NEW_REQUEST,
-      CARGO_STATUSES.DELIVERED,
-      CARGO_STATUSES.CANCELLED,
-      CARGO_STATUSES.REJECTED,
-    ];
-    const inProgressCargos = cargos.filter(
-      (c) => !notInProgressStatuses.includes(<CARGO_STATUSES>c.status),
-    );
-
-    const stat = new SupplierCargoStatsModel();
-    stat.totalCargos = cargos.length;
-    stat.newCargos = newCargos.length;
-    stat.inProgressCargos = inProgressCargos.length;
-    stat.deliveredCargos = deliveredCargos.length;
-    stat.profit = 0;
-    stat.commissionPayments = 0;
-
-    return stat;
-  }
-
   public async createCargoStatusChangeAction(
     newCargoStatusChangeAction: CreateCargoStatusChangeActionModel,
   ): Promise<CargoStatusChangeActionModel> {
     const existingCargoStatusChangeAction =
       await this.getCargoStatusChangeAction(
         <CARGO_STATUSES>newCargoStatusChangeAction.fromStatus,
-        false
+        false,
       );
     if (existingCargoStatusChangeAction) {
       throw new HttpException(

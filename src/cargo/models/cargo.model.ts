@@ -37,6 +37,16 @@ export enum CARGO_STATUSES {
   UNKNOWN = 'UNKNOWN',
 }
 
+export const TRIGGER_CONFIRMED_STATUSES_FOR_COMMISSION = [
+  CARGO_STATUSES.AWAITING_PICKUP,
+  CARGO_STATUSES.RECEIVED,
+  CARGO_STATUSES.AWAITING_SHIPMENT,
+  CARGO_STATUSES.SHIPPED,
+  CARGO_STATUSES.ARRIVED_AT_DESTINATION_COUNTRY,
+  CARGO_STATUSES.AWAITING_DELIVERY,
+  CARGO_STATUSES.DELIVERED,
+];
+
 export class CargoItemModel {
   readonly _id: Types.ObjectId;
 
@@ -195,7 +205,7 @@ export class CargoModel {
   @IsNotEmpty()
   @IsNumber()
   @ApiProperty({
-    description: 'Cost of the cargo shipment',
+    description: 'Service fee of the cargo shipment',
   })
   serviceFee: number;
 

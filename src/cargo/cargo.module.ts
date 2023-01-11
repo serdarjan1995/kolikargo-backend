@@ -2,7 +2,8 @@ import { Module } from '@nestjs/common';
 import { CargoService } from './cargo.service';
 import {
   CargoController,
-  CargoPublicTrackingController, CargoStatusChangeActionController,
+  CargoPublicTrackingController,
+  CargoStatusChangeActionController,
   CargoTypeController,
   SupplierCargoController,
 } from './cargo.controller';
@@ -26,6 +27,12 @@ import {
   CargoStatusChangeAction,
   CargoStatusChangeActionSchema,
 } from './schemas/CargoStatusChangeAction.schema';
+import {
+  CargoSupplierPayment,
+  CargoSupplierPaymentSchema,
+} from './schemas/cargoSupplierPayment.schema';
+import { CargoCommissionService } from './cargoCommission.service';
+import { CargoApplyCommissionsListener } from './listeners/cargo-apply-commissions.listener';
 
 @Module({
   imports: [
@@ -46,6 +53,10 @@ import {
         name: CargoStatusChangeAction.name,
         schema: CargoStatusChangeActionSchema,
       },
+      {
+        name: CargoSupplierPayment.name,
+        schema: CargoSupplierPaymentSchema,
+      },
     ]),
     CargoSupplierModule,
     UserAddressModule,
@@ -56,9 +67,11 @@ import {
   ],
   providers: [
     CargoService,
+    CargoCommissionService,
     SmsProviderService,
     CargoCreatedListener,
     CargoStatusUpdatedListener,
+    CargoApplyCommissionsListener,
   ],
   controllers: [
     CargoController,
@@ -67,6 +80,6 @@ import {
     SupplierCargoController,
     CargoStatusChangeActionController,
   ],
-  exports: [CargoService, SmsProviderService],
+  exports: [CargoService, CargoCommissionService, SmsProviderService],
 })
 export class CargoModule {}

@@ -45,10 +45,18 @@ export class CargoPriceFieldModel {
   })
   readonly price: number;
 
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Commission taken from cargo supplier',
+    example: 0.1,
+  })
+  readonly commission: number;
+
   @IsBoolean()
   @IsNotEmpty()
   @ApiProperty({
-    description: 'Is courier pickable from address',
+    description: 'Is address pickable by courier',
     example: false,
     default: false,
   })

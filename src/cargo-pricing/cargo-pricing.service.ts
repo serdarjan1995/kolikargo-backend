@@ -12,6 +12,7 @@ import { LocationService } from '../location/location.service';
 const CargoPricingModelProjection = {
   _id: false,
   __v: false,
+  'prices.commission': false,
 };
 
 @Injectable()

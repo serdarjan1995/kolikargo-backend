@@ -10,10 +10,6 @@ import { LocationModule } from '../location/location.module';
 import { UserModule } from '../user/user.module';
 import { CargoPricingModule } from '../cargo-pricing/cargo-pricing.module';
 import { NewCargoSupplierReviewListener } from './listeners/new-cargo-supplier-review.listener';
-import {
-  CargoSupplierCommissions,
-  CargoSupplierCommissionSchema,
-} from './schemas/cargoSupplierCommissions.schema';
 
 @Module({
   imports: [
@@ -21,10 +17,6 @@ import {
       {
         name: CargoSupplier.name,
         schema: CargoSupplierSchema,
-      },
-      {
-        name: CargoSupplierCommissions.name,
-        schema: CargoSupplierCommissionSchema,
       },
     ]),
     LocationModule,

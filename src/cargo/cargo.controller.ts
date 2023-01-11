@@ -13,14 +13,27 @@ import {
 } from '@nestjs/common';
 import { RolesGuard } from '../auth/roles.guard';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CargoService } from './cargo.service';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../auth/role.enum';
 import { AuthenticatedUser } from '../user/models/user.model';
-import { CARGO_STATUSES, CargoModel, CreateCargoModel, UpdateCargoStatusModel } from './models/cargo.model';
+import {
+  CARGO_STATUSES,
+  CargoModel,
+  CreateCargoModel,
+  UpdateCargoStatusModel,
+} from './models/cargo.model';
 import { CargoPublicTrackingModel } from './models/cargoPublicTracking.model';
-import { CargoTypeModel, CreateUpdateCargoTypeModel } from './models/cargoType.model';
+import {
+  CargoTypeModel,
+  CreateUpdateCargoTypeModel,
+} from './models/cargoType.model';
 import { CargoSupplierService } from '../cargo-supplier/cargo-supplier.service';
 import { ListFilterSupplierCargosModel } from './models/ListFilterSupplierCargos.model';
 import { SupplierCargoStatsModel } from './models/SupplierCargoStats.model';
@@ -29,6 +42,12 @@ import {
   CargoStatusChangeActionModel,
   CreateCargoStatusChangeActionModel,
 } from './models/cargoStatusChangeAction.model';
+import { CargoCommissionService } from './cargoCommission.service';
+import { CargoSupplierPaymentModel, CreateCargoSupplierPaymentPeriodModel } from './models/cargoSupplierPayment.model';
+import {
+  CargoSupplierPaymentPeriodModel,
+  CargoSupplierPaymentPeriodQueryModel,
+} from './models/cargoSupplierPaymentPeriod.model';
 
 @Controller('cargo')
 @UseGuards(RolesGuard)
@@ -182,6 +201,7 @@ export class CargoTypeController {
 export class SupplierCargoController {
   constructor(
     private cargoService: CargoService,
+    private cargoSupplierCommissionService: CargoCommissionService,
     private cargoSupplierService: CargoSupplierService,
   ) {}
 
@@ -195,10 +215,60 @@ export class SupplierCargoController {
     @Request() req,
     @Query() query: StartDateEndDateQueryModel,
   ) {
-    return await this.cargoService.supplierCargoStats(
+    return await this.cargoSupplierCommissionService.supplierCargoStats(
       req.user.id,
       query.startDate,
       query.endDate,
+    );
+  }
+
+  @Get('payment-periods')
+  @Roles(Role.Supplier, Role.Admin)
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: CargoSupplierPaymentPeriodModel,
+  })
+  public async getSupplierPaymentPeriods(
+    @Request() req,
+    @Query() query: StartDateEndDateQueryModel,
+  ) {
+    return await this.cargoSupplierCommissionService.listCargoSupplierPaymentPeriods(
+      req.user.id,
+      query.startDate,
+      query.endDate,
+    );
+  }
+
+  @Get('payments')
+  @Roles(Role.Supplier, Role.Admin)
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: CargoSupplierPaymentModel,
+    isArray: true,
+  })
+  public async getSupplierPayments(
+    @Request() req,
+    @Query() query: CargoSupplierPaymentPeriodQueryModel,
+  ) {
+    return await this.cargoSupplierCommissionService.listPaymentsOfThePeriod(
+      req.user.id,
+      query.period
+    );
+  }
+
+  @Post('period')
+  @Roles(Role.Admin)
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: SupplierCargoStatsModel,
+  })
+  public async createPaymentPeriod(
+    @Request() req,
+    @Body()
+    newCargoSupplierPaymentPeriod: CreateCargoSupplierPaymentPeriodModel,
+  ) {
+    return await this.cargoSupplierCommissionService.createCargoSupplierPaymentPeriod(
+      newCargoSupplierPaymentPeriod,
     );
   }
 
