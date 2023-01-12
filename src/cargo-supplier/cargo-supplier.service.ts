@@ -9,10 +9,6 @@ import {
 import { LocationService } from '../location/location.service';
 import { UserService } from '../user/user.service';
 import { getRandomStr } from '../utils';
-import {
-  CargoSupplierCommissionsModel,
-  CreateCargoSupplierCommissionModel,
-} from './models/cargoSupplierCommissions.model';
 
 const cargoSupplierModelProjection = {
   _id: false,
@@ -22,18 +18,11 @@ const cargoSupplierModelProjection = {
   publicAuthToken: false,
 };
 
-const cargoSupplierCommissionModelProjection = {
-  _id: false,
-  __v: false,
-};
-
 @Injectable()
 export class CargoSupplierService {
   constructor(
     @InjectModel('CargoSupplier')
     private readonly cargoSupplierModel: Model<CargoSupplierModel>,
-    @InjectModel('CargoSupplierCommissions')
-    private readonly cargoSupplierCommissionsModel: Model<CargoSupplierCommissionsModel>,
     private readonly locationService: LocationService,
     private readonly userService: UserService,
   ) {}
@@ -46,13 +35,6 @@ export class CargoSupplierService {
     {
       path: 'serviceDestinationLocations',
       select: 'id city country address',
-    },
-  ];
-
-  public populateFieldsCommission = [
-    {
-      path: 'supplier',
-      select: 'id name description avatarUrl phoneNumber',
     },
   ];
 
@@ -265,84 +247,5 @@ export class CargoSupplierService {
       );
     }
     return this.getCargoSupplier(cargoSupplier.id, true);
-  }
-
-  public async getSupplierCommissions(
-    filter: object,
-  ): Promise<CargoSupplierCommissionsModel[]> {
-    return await this.cargoSupplierCommissionsModel
-      .find(filter, cargoSupplierCommissionModelProjection)
-      .populate(this.populateFieldsCommission)
-      .exec();
-  }
-
-  public async getSupplierCommissionByFilter(
-    filter: object,
-  ): Promise<CargoSupplierCommissionsModel> {
-    const cargoSupplierCommission = await this.cargoSupplierCommissionsModel
-      .findOne(filter, cargoSupplierCommissionModelProjection)
-      .populate(this.populateFieldsCommission)
-      .exec();
-    if (!cargoSupplierCommission) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.NOT_FOUND,
-          message: 'Cargo Supplier Commission Not Found',
-          errorCode: 'cargo_supplier_commission_not_found',
-        },
-        HttpStatus.NOT_FOUND,
-      );
-    }
-    return cargoSupplierCommission;
-  }
-
-  public async createCargoSupplierCommission(
-    supplierObjectId: Types.ObjectId,
-    newCargoSupplierCommission: CreateCargoSupplierCommissionModel,
-  ): Promise<CargoSupplierCommissionsModel> {
-    const existingCargoSupplierCommission = await this.getSupplierCommissions({
-      supplier: supplierObjectId,
-    });
-    if (existingCargoSupplierCommission.length) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: `Supplier commission already registered`,
-          errorCode: 'cargo_supplier_commission_already_exists',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    const cargoSupplierCommission =
-      await this.cargoSupplierCommissionsModel.create({
-        ...newCargoSupplierCommission,
-        supplier: supplierObjectId,
-      });
-    await cargoSupplierCommission.validate();
-    await cargoSupplierCommission.save();
-    return this.getSupplierCommissionByFilter({ supplier: supplierObjectId });
-  }
-
-  public async updateCargoSupplierCommission(
-    id: any,
-    updateParams: CreateCargoSupplierCommissionModel,
-  ): Promise<CargoSupplierCommissionsModel> {
-    const cargoSupplierCommission = await this.cargoSupplierCommissionsModel
-      .findOneAndUpdate({ supplier: id }, updateParams)
-      .exec();
-    if (!cargoSupplierCommission) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.NOT_FOUND,
-          message: 'Cargo Supplier Commission Not Found',
-          errorCode: 'cargo_supplier_commission_not_found',
-        },
-        HttpStatus.NOT_FOUND,
-      );
-    }
-    return this.getSupplierCommissionByFilter({
-      supplier: id,
-    });
   }
 }

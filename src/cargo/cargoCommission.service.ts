@@ -2,7 +2,6 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CargoSupplierService } from '../cargo-supplier/cargo-supplier.service';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   CargoSupplierPaymentModel,
   ChangeCargoSupplierPaymentPeriodPaymentStatusModel,
@@ -13,7 +12,6 @@ import {
 import { SupplierCargoStatsModel } from './models/SupplierCargoStats.model';
 import { CARGO_STATUSES } from './models/cargo.model';
 import { CargoService } from './cargo.service';
-import { CargoSupplierPaymentPeriodModel } from './models/cargoSupplierPaymentPeriod.model';
 
 const CargoSupplierPaymentModelProjection = {
   _id: false,
@@ -27,7 +25,6 @@ export class CargoCommissionService {
     private readonly cargoSupplierPaymentModel: Model<CargoSupplierPaymentModel>,
     private readonly cargoSupplierService: CargoSupplierService,
     private readonly cargoService: CargoService,
-    private eventEmitter: EventEmitter2,
   ) {}
 
   public populateFields = [

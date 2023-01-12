@@ -1,10 +1,9 @@
 import {
-  IsDefined,
   IsEnum,
   IsNotEmpty,
   IsObject,
-  IsOptional,
-  IsUUID, Validate, ValidateIf,
+  IsUUID,
+  ValidateIf,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional, OmitType } from '@nestjs/swagger';
 import { Types } from 'mongoose';

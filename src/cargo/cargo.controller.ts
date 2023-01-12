@@ -43,7 +43,10 @@ import {
   CreateCargoStatusChangeActionModel,
 } from './models/cargoStatusChangeAction.model';
 import { CargoCommissionService } from './cargoCommission.service';
-import { CargoSupplierPaymentModel, CreateCargoSupplierPaymentPeriodModel } from './models/cargoSupplierPayment.model';
+import {
+  CargoSupplierPaymentModel,
+  CreateCargoSupplierPaymentPeriodModel,
+} from './models/cargoSupplierPayment.model';
 import {
   CargoSupplierPaymentPeriodModel,
   CargoSupplierPaymentPeriodQueryModel,
@@ -252,7 +255,7 @@ export class SupplierCargoController {
   ) {
     return await this.cargoSupplierCommissionService.listPaymentsOfThePeriod(
       req.user.id,
-      query.period
+      query.period,
     );
   }
 
