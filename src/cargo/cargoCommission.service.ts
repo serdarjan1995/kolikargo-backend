@@ -193,7 +193,7 @@ export class CargoCommissionService {
 
   public async listCargoSupplierPaymentPeriods(supplierId, startDate, endDate) {
     const supplier = await this.cargoSupplierService.idToObjectId(supplierId);
-    return this.cargoSupplierPaymentModel.aggregate([
+    const payments = await this.cargoSupplierPaymentModel.aggregate([
       {
         $match: {
           supplier: supplier,
@@ -205,15 +205,16 @@ export class CargoCommissionService {
           _id: {
             period: '$period',
           },
-          paymentStatus: {
-            $accumulator: {
-              init: `function(){return "${PAYMENT_STATUS.PAID}"}`,
-              accumulate: `function(state, paymentStatus){if(paymentStatus != "${PAYMENT_STATUS.PAID}"){return "${PAYMENT_STATUS.PENDING}";} return state; }`,
-              accumulateArgs: ['$paymentStatus'],
-              merge: `function(state1, state2){return if (state1 == state2 && state1 == "${PAYMENT_STATUS.PAID}") {return "${PAYMENT_STATUS.PAID}1";} return "2${PAYMENT_STATUS.PENDING}"}`,
-              lang: 'js',
-            },
-          },
+          // paymentStatus: {
+          //   $accumulator: {
+          //     init: `function(){return "${PAYMENT_STATUS.PAID}"}`,
+          //     accumulate: `function(state, paymentStatus){if(paymentStatus != "${PAYMENT_STATUS.PAID}"){return "${PAYMENT_STATUS.PENDING}";} return state; }`,
+          //     accumulateArgs: ['$paymentStatus'],
+          //     merge: `function(state1, state2){return if (state1 == state2 && state1 == "${PAYMENT_STATUS.PAID}") {return "${PAYMENT_STATUS.PAID}1";} return "2${PAYMENT_STATUS.PENDING}"}`,
+          //     lang: 'js',
+          //   },
+          // },
+          paymentStatus: { $addToSet: '$paymentStatus' },
           totalRevenue: { $sum: '$revenue' },
           totalProfit: { $sum: '$profit' },
           totalSupplierCommission: { $sum: '$supplierCommission' },
@@ -237,6 +238,14 @@ export class CargoCommissionService {
         $sort: { period: 1 },
       },
     ]);
+    payments.forEach((p) => {
+      if (p.paymentStatus?.length == 1) {
+        p.paymentStatus = p.paymentStatus.pop();
+      } else {
+        p.paymentStatus = PAYMENT_STATUS.PENDING;
+      }
+    });
+    return payments;
   }
 
   public async listPaymentsOfThePeriod(supplierId: string, period: Date) {
