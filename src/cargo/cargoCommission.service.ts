@@ -198,6 +198,7 @@ export class CargoCommissionService {
         $match: {
           supplier: supplier,
           datetime: { $gte: startDate, $lte: endDate },
+          period: { $ne: null },
         },
       },
       {
