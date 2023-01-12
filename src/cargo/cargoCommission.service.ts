@@ -118,6 +118,7 @@ export class CargoCommissionService {
     const cargoSupplierPaymentFinal = {
       ...newCargoSupplierPayment,
       datetime: new Date(),
+      period: null,
     };
 
     const cargoSupplierPayment = await this.cargoSupplierPaymentModel.create(

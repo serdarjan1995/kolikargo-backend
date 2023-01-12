@@ -31,7 +31,7 @@ export class CargoSupplierPayment extends Document {
   @Prop({ required: true })
   datetime: Date;
 
-  @Prop({ required: false })
+  @Prop({ required: false, default: null })
   period: Date;
 
   @Prop({ required: true })
