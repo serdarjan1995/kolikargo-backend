@@ -77,6 +77,23 @@ export class CargoApplyCommissionsListener {
     newCargoSupplierPayment.commission = supplierCommission + cargo.serviceFee;
     newCargoSupplierPayment.paymentStatus = PAYMENT_STATUS.PENDING;
 
+    // round float values
+    newCargoSupplierPayment.supplierCommission = Number(
+      newCargoSupplierPayment.supplierCommission.toFixed(2),
+    );
+    newCargoSupplierPayment.customerCommission = Number(
+      newCargoSupplierPayment.customerCommission.toFixed(2),
+    );
+    newCargoSupplierPayment.commission = Number(
+      newCargoSupplierPayment.commission.toFixed(2),
+    );
+    newCargoSupplierPayment.revenue = Number(
+      newCargoSupplierPayment.revenue.toFixed(2),
+    );
+    newCargoSupplierPayment.profit = Number(
+      newCargoSupplierPayment.profit.toFixed(2),
+    );
+
     await this.cargoCommissionService.createCargoSupplierPayment(
       newCargoSupplierPayment,
     );
