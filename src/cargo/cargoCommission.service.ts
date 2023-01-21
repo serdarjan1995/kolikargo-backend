@@ -106,8 +106,9 @@ export class CargoCommissionService {
         },
       },
     ]);
-    stat.profit = Number(payments[0].totalProfit.toFixed(2));
-    stat.commissionPayments = Number(payments[0].totalCommission.toFixed(2));
+    stat.profit = Number(payments[0]?.totalProfit?.toFixed(2)) || 0;
+    stat.commissionPayments =
+      Number(payments[0]?.totalCommission?.toFixed(2)) || 0;
 
     return stat;
   }
