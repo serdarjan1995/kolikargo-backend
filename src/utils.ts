@@ -54,5 +54,6 @@ export const generateCode = (length: number): number => {
   for (let i = 0; i < length; i++) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
+  result = ('111111' + result).slice(-6);
   return Number(result);
 };
