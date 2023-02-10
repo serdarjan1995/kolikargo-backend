@@ -190,7 +190,8 @@ export class UserService {
   }
 
   async sendLoginCodeSMS(phoneNumber, code) {
-    const message = `${code} doğrulama kodu ile giriş yapabilirsiniz.\n\nKolikargo`;
+    const zeroPaddedCode = ('000000' + code).slice(-6);
+    const message = `${zeroPaddedCode} doğrulama kodu ile giriş yapabilirsiniz.\n\nKolikargo`;
     console.info('sent login code', phoneNumber, message);
     return this.sendSMS(phoneNumber, message);
   }
