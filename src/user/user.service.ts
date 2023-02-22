@@ -59,6 +59,7 @@ export class UserService {
     const user = await this.userModel.create({
       ...newUser,
       roles: [Role.User],
+      createdAt: new Date(),
     });
     await user.validate();
     await user.save();
