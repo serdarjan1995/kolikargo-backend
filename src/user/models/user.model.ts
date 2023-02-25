@@ -68,9 +68,9 @@ export class UserLogin {
   @IsNumber()
   @ApiProperty({
     description: 'Received authentication code',
-    example: 12345,
+    example: 123456,
   })
-  code: number;
+  authCode: number;
 }
 
 export class UserRegister {
