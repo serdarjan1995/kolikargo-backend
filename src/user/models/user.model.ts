@@ -1,5 +1,6 @@
 import {
-  IsArray, IsDate,
+  IsArray,
+  IsDate,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -7,7 +8,7 @@ import {
   IsString,
 } from 'class-validator';
 import { Role } from '../../auth/role.enum';
-import { ApiProperty, ApiPropertyOptional, PickType } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, OmitType, PickType } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { LoginType } from '../../auth/auth.service';
 
@@ -41,6 +42,13 @@ export class UserModel {
   })
   readonly phoneNumber: string;
 
+  @IsEnum(Role, { each: true })
+  @IsOptional()
+  @ApiProperty({
+    description: 'User roles',
+    isArray: true,
+    enum: Role,
+  })
   readonly roles: Role[];
 
   @IsNotEmpty()
@@ -54,6 +62,12 @@ export class UserModel {
 export class UpdateUserProfileModel extends PickType(UserModel, [
   'name',
   'surname',
+] as const) {}
+
+export class CreateUserModelAdmin extends OmitType(UserModel, [
+  'createdAt',
+  'id',
+  '_id',
 ] as const) {}
 
 export class UserLogin {

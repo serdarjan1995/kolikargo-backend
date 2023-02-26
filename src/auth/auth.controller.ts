@@ -136,12 +136,13 @@ export class AuthController {
   public async register(@Body() req: UserRegister) {
     checkNumber(req.phoneNumber);
 
-    const user = await this.userService.getUserBy(
+    let user = await this.userService.getUserBy(
       { phoneNumber: req.phoneNumber },
+      false,
       false,
     );
     if (!user) {
-      await this.userService.createUser(req);
+      user = await this.userService.createUser(req);
     }
     const authCode = await this.userService.refreshCode(
       req.phoneNumber,

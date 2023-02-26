@@ -9,17 +9,20 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { UserModel } from './models/user.model';
+import { CreateUserModelAdmin, UserModel } from './models/user.model';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../auth/role.enum';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { AppConfigService } from './appConfig.service';
 import { AppConfigModel } from './models/appConfig.model';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @Controller('user')
 @UseGuards(RolesGuard)
 @UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+@ApiTags('user')
 export class UserController {
   constructor(private userService: UserService) {}
 
@@ -27,29 +30,37 @@ export class UserController {
   @Roles(Role.Admin)
   public async getUsers(@Query() query) {
     const name = query.name;
-    return await this.userService.getUsers(name);
+    return await this.userService.getUsers(name, false);
   }
 
   @Post()
   @Roles(Role.Admin)
-  public createUser(@Body() user: UserModel) {
-    return this.userService.createUser(user);
+  public createUser(@Body() user: CreateUserModelAdmin) {
+    return this.userService.createUser(user, user?.roles);
   }
 
   @Get(':id')
   @Roles(Role.Admin)
   public async getUserById(@Param('id') id: string) {
-    return id;
+    return await this.userService.getUserBy({ id: id }, true, false);
   }
 
   @Put(':id')
   @Roles(Role.Admin)
-  public async updateUser(@Param('id') id: string) {
-    return id;
+  public async updateUser(
+    @Param('id') id: string,
+    @Body() updateParams: CreateUserModelAdmin,
+  ) {
+    return await this.userService.updateUserDetailsAdmin(
+      id,
+      updateParams,
+      false,
+    );
   }
 }
 
 @Controller('app-config')
+@ApiTags('app-config')
 export class AppConfigController {
   constructor(private appConfigService: AppConfigService) {}
 
@@ -62,6 +73,7 @@ export class AppConfigController {
   @Roles(Role.Admin)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   public async updateAppConfig(@Body() appConfig: AppConfigModel) {
     return await this.appConfigService.updateAppConfig(appConfig);
   }

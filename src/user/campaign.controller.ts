@@ -13,8 +13,10 @@ import { RolesGuard } from '../auth/roles.guard';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CampaignService } from './campaign.service';
 import { CreateCampaignModel } from './models/campaign.model';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @Controller('campaigns')
+@ApiTags('campaigns')
 export class CampaignController {
   constructor(private campaignService: CampaignService) {}
 
@@ -27,6 +29,7 @@ export class CampaignController {
   @Roles(Role.Admin)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   public async createCampaign(@Body() campaign: CreateCampaignModel) {
     return await this.campaignService.createCampaign(campaign);
   }
@@ -35,6 +38,7 @@ export class CampaignController {
   @Roles(Role.Admin)
   @UseGuards(RolesGuard)
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   public async updateCampaign(
     @Body() campaignUpdateParams,
     @Param('id') id: string,

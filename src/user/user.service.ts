@@ -31,15 +31,20 @@ export class UserService {
     private readonly httpService: HttpService,
   ) {}
 
-  public async getUsers(name): Promise<UserModel[]> {
+  public async getUsers(name, useProjection = true): Promise<UserModel[]> {
     const filters = {};
     if (name) {
       filters['name'] = { $regex: `.*${name}.*`, $options: 'i' };
     }
-    return await this.userModel.find(filters, userProjection).exec();
+    return await this.userModel
+      .find(filters, useProjection ? userProjection : null)
+      .exec();
   }
 
-  public async createUser(newUser: UserRegister): Promise<UserModel> {
+  public async createUser(
+    newUser: UserRegister,
+    roles = null,
+  ): Promise<UserModel> {
     const isPhoneNumberRegistered = await this.getUserBy(
       {
         phoneNumber: newUser.phoneNumber,
@@ -56,14 +61,17 @@ export class UserService {
         HttpStatus.BAD_REQUEST,
       );
     }
+    if (!roles) {
+      roles = [Role.User];
+    }
     const user = await this.userModel.create({
       ...newUser,
-      roles: [Role.User],
+      roles: roles,
       createdAt: new Date(),
     });
     await user.validate();
     await user.save();
-    return await this.getUser(user._id);
+    return await this.getUserBy({ _id: user._id }, true, false);
   }
 
   public async getUser(id): Promise<UserModel> {
@@ -122,6 +130,46 @@ export class UserService {
       );
     }
     return this.getUser(user._id);
+  }
+
+  public async updateUserDetailsAdmin(
+    userId,
+    updateParams,
+    useProjection = true,
+  ): Promise<UserModel> {
+    const userWithSamePhoneNumber = await this.getUserBy(
+      {
+        phoneNumber: updateParams?.phoneNumber,
+      },
+      false,
+    );
+    if (
+      userWithSamePhoneNumber &&
+      userWithSamePhoneNumber?.phoneNumber != updateParams?.phoneNumber
+    ) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: 'Number has been already registered',
+          errorCode: 'number_already_registered',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const user = await this.userModel
+      .findOneAndUpdate({ _id: await this.idToObjectId(userId) }, updateParams)
+      .exec();
+    if (!user) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `User Not Found`,
+          errorCode: 'user_not_found',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return this.getUserBy({ _id: user._id }, true, useProjection);
   }
 
   async getAuthCode(phoneNumber: string): Promise<any> {
