@@ -363,6 +363,9 @@ export class CargoService {
         } as ValidateCouponModel,
         user.id,
       );
+      if (coupon.minWeight > totalWeight) {
+        coupon = null;
+      }
     }
 
     let totalFee = totalFeeActual;
