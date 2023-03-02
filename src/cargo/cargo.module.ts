@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { CargoService } from './cargo.service';
 import {
   CargoController,
@@ -63,7 +63,7 @@ import { CargoApplyCommissionsListener } from './listeners/cargo-apply-commissio
     CargoPricingModule,
     LocationModule,
     UserModule,
-    CouponModule,
+    forwardRef(() => CouponModule),
   ],
   providers: [
     CargoService,

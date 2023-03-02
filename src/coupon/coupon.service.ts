@@ -8,6 +8,10 @@ import {
   ValidateCouponModel,
 } from './models/coupon.model';
 import { CargoSupplierService } from '../cargo-supplier/cargo-supplier.service';
+import { UserModel } from '../user/models/user.model';
+import { CargoService } from '../cargo/cargo.service';
+import { CARGO_STATUSES } from '../cargo/models/cargo.model';
+import { UserService } from '../user/user.service';
 
 const CouponModelProjection = {
   _id: false,
@@ -20,6 +24,8 @@ export class CouponService {
     @InjectModel('Coupon')
     private readonly couponModel: Model<CouponModel>,
     private readonly cargoSupplierService: CargoSupplierService,
+    private readonly cargoService: CargoService,
+    private readonly userService: UserService,
   ) {}
 
   public populateFields = [
@@ -132,7 +138,18 @@ export class CouponService {
 
   public async validateCoupon(
     coupon: ValidateCouponModel,
+    userId: string,
   ): Promise<CouponModel> {
+    const userObjectId = await this.userService.idToObjectId(userId);
+    const couponUsedInCargo = await this.cargoService.getCargoByFiler(
+      {
+        user: userObjectId,
+        usedCoupon: coupon.code,
+        status: { $nin: [CARGO_STATUSES.REJECTED, CARGO_STATUSES.CANCELLED] },
+      },
+      false,
+      false,
+    );
     // find universal coupon and check validity
     const universalCoupons = await this.getCoupons({
       type: COUPON_TYPES.UNIVERSAL,
@@ -150,7 +167,14 @@ export class CouponService {
           HttpStatus.NOT_FOUND,
         );
       }
-      return validCoupon;
+
+      //check coupon for multipleUse
+      if (
+        validCoupon?.multipleUse ||
+        (!validCoupon?.multipleUse && !couponUsedInCargo)
+      ) {
+        return validCoupon;
+      }
     }
 
     // find company coupon and check validity
@@ -179,7 +203,13 @@ export class CouponService {
           HttpStatus.NOT_FOUND,
         );
       }
-      return validCoupon;
+      //check coupon for multipleUse
+      if (
+        validCoupon?.multipleUse ||
+        (!validCoupon?.multipleUse && !couponUsedInCargo)
+      ) {
+        return validCoupon;
+      }
     }
     throw new HttpException(
       {

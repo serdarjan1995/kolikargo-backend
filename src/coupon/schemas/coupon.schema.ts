@@ -44,6 +44,9 @@ export class Coupon extends Document {
     ref: 'CargoSupplier',
   })
   supplier: Types.ObjectId;
+
+  @Prop({ required: false, default: false })
+  multipleUse: boolean;
 }
 
 export const CouponSchema = SchemaFactory.createForClass(Coupon);

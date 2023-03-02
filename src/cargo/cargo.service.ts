@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CargoSupplierService } from '../cargo-supplier/cargo-supplier.service';
@@ -81,6 +87,7 @@ export class CargoService {
     private readonly cargoSupplierService: CargoSupplierService,
     private readonly locationService: LocationService,
     private readonly userAddressService: UserAddressService,
+    @Inject(forwardRef(() => CouponService))
     private readonly couponService: CouponService,
     private readonly cargoPricingService: CargoPricingService,
     private readonly userService: UserService,
@@ -349,10 +356,13 @@ export class CargoService {
 
     let coupon: CouponModel = null;
     if (newCargo?.usedCoupon) {
-      coupon = await this.couponService.validateCoupon({
-        code: newCargo.usedCoupon,
-        supplier: supplier.id,
-      } as ValidateCouponModel);
+      coupon = await this.couponService.validateCoupon(
+        {
+          code: newCargo.usedCoupon,
+          supplier: supplier.id,
+        } as ValidateCouponModel,
+        user.id,
+      );
     }
 
     let totalFee = totalFeeActual;
@@ -423,7 +433,7 @@ export class CargoService {
     const cargoCreatedSupplierEvent = new CargoCreatedSupplierEvent();
     cargoCreatedSupplierEvent.cargoSupplierName = supplier.name;
     cargoCreatedSupplierEvent.cargoSupplierPhoneNumber =
-      supplierUser.user.phoneNumber;
+      supplierUser.phoneNumber;
     cargoCreatedSupplierEvent.link = `https://api.kolikargo.com/track-cargo/${cargo.trackingNumber}?authToken=${supplier.publicAuthToken}`;
     this.eventEmitter.emit('cargo.created.supplier', cargoCreatedSupplierEvent);
 
@@ -451,12 +461,13 @@ export class CargoService {
   public async getCargoByFiler(
     filter: object,
     noProjection = false,
+    raiseException = true,
   ): Promise<CargoModel> {
     const cargo = await this.cargoModel
       .findOne(filter, noProjection ? null : CargoModelProjection)
       .populate(this.populateFields)
       .exec();
-    if (!cargo) {
+    if (!cargo && raiseException) {
       throw new HttpException(
         {
           statusCode: HttpStatus.NOT_FOUND,

@@ -110,7 +110,10 @@ export class CouponController {
     description: 'Not found response',
   })
   @HttpCode(200)
-  public async validateCoupon(@Body() coupon: ValidateCouponModel) {
-    return this.couponService.validateCoupon(coupon);
+  public async validateCoupon(
+    @Request() req,
+    @Body() coupon: ValidateCouponModel,
+  ) {
+    return this.couponService.validateCoupon(coupon, req.user.id);
   }
 }

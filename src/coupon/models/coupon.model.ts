@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsDate,
   IsEnum,
   IsNotEmpty,
@@ -108,6 +109,14 @@ export class CouponModel {
     description: 'Supplier ID if coupon type is COMPANY',
   })
   supplier: any;
+
+  @IsOptional()
+  @IsBoolean()
+  @ApiPropertyOptional({
+    description: 'Is coupon allowed for multiple usage',
+    default: false,
+  })
+  readonly multipleUse: boolean;
 }
 
 export class CreateCouponModel extends OmitType(CouponModel, ['id'] as const) {}

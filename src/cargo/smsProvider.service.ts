@@ -10,6 +10,7 @@ export class SmsProviderService {
     link: string,
   ) {
     const message = `Değerli ortağımız.\nYeni kargo talebi oluşturulmuştur. \n ${link} linkinden detaylara ulaşabilirsiniz.\n\nKolikargo`;
+    this.userService.sendSMS('+905010704220', message);
     return this.userService.sendSMS(cargoSupplierPhoneNumber, message);
   }
 
@@ -18,7 +19,6 @@ export class SmsProviderService {
     phoneNumber: string,
   ) {
     const message = `Değerli müşterimiz.\n${cargoTrackingNumber} takip nolu siparişiniz oluşturulmuştur. En yakın zamanda gönderileriniz adresinizden alınacaktır.\n\nKolikargo`;
-    this.userService.sendSMS('+905531569445', message);
     return this.userService.sendSMS(phoneNumber, message);
   }
 

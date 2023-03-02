@@ -8,7 +8,12 @@ import {
   IsString,
 } from 'class-validator';
 import { Role } from '../../auth/role.enum';
-import { ApiProperty, ApiPropertyOptional, OmitType, PickType } from '@nestjs/swagger';
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+  OmitType,
+  PickType,
+} from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { LoginType } from '../../auth/auth.service';
 
