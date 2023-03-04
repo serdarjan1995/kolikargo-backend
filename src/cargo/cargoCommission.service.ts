@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, ObjectId } from 'mongoose';
 import { CargoSupplierService } from '../cargo-supplier/cargo-supplier.service';
 import {
   CargoSupplierPaymentModel,
@@ -113,9 +113,25 @@ export class CargoCommissionService {
     return stat;
   }
 
+  public async findCargoCommissionByCargo(cargoObjectId: ObjectId) {
+    return await this.cargoSupplierPaymentModel
+      .findOne({ cargo: cargoObjectId })
+      .exec();
+  }
+
   public async createCargoSupplierPayment(
     newCargoSupplierPayment: CreateCargoSupplierPaymentModel,
   ) {
+    //delete first if related commission exists with associated cargo
+    const existingCommission = await this.findCargoCommissionByCargo(
+      newCargoSupplierPayment.cargo,
+    );
+    if (existingCommission) {
+      await this.cargoSupplierPaymentModel
+        .deleteOne({ id: existingCommission.id })
+        .exec();
+    }
+
     const cargoSupplierPaymentFinal = {
       ...newCargoSupplierPayment,
       datetime: new Date(),

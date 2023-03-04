@@ -17,6 +17,7 @@ import { AppLoggerMiddleware } from './app.middleware';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ReviewModule } from './review/review.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 const MONGODB_URL = process.env.MONGO_URL || 'localhost';
 const MONGODB_USER = process.env.MONGODB_USER;
@@ -33,6 +34,7 @@ const MONGO_CONNECTION_STR =
       serveRoot: '/static',
     }),
     EventEmitterModule.forRoot(),
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({ envFilePath: '.env' }),
     MongooseModule.forRoot(MONGO_CONNECTION_STR, { sslValidate: false }),
     TwilioModule.forRoot({

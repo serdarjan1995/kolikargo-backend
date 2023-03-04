@@ -33,6 +33,7 @@ import {
 } from './schemas/cargoSupplierPayment.schema';
 import { CargoCommissionService } from './cargoCommission.service';
 import { CargoApplyCommissionsListener } from './listeners/cargo-apply-commissions.listener';
+import { CargoCommissionPaymentTasksService } from './cargoCommissionPayment.tasks.service';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { CargoApplyCommissionsListener } from './listeners/cargo-apply-commissio
     CargoCreatedListener,
     CargoStatusUpdatedListener,
     CargoApplyCommissionsListener,
+    CargoCommissionPaymentTasksService,
   ],
   controllers: [
     CargoController,
