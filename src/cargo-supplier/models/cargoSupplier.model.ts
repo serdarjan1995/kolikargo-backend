@@ -159,6 +159,14 @@ export class CargoSupplierModel {
 
   publicAuthToken: string;
 
+  @IsBoolean()
+  @IsOptional()
+  @ApiPropertyOptional({
+    description: 'Is the account active',
+    example: true,
+  })
+  isActive: boolean;
+
   readonly roles: Role[];
 }
 

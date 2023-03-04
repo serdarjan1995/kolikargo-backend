@@ -69,6 +69,9 @@ export class CargoSupplier extends Document {
   @Prop({ required: false })
   publicAuthToken: string;
 
+  @Prop({ required: false, default: true })
+  isActive: boolean;
+
   @Prop({ required: true })
   roles: Role[];
 }

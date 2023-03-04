@@ -49,7 +49,9 @@ export class CargoSupplierController {
     isArray: true,
   })
   public async getCargoSuppliers(@Query() query: ListFilterCargoSupplierModel) {
-    const filter = {};
+    const filter = {
+      isActive: true,
+    };
     const name = query?.name;
     const minWeight = query?.minWeight;
     const maxWeight = query?.maxWeight;
