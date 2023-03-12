@@ -10,7 +10,7 @@ export class SmsProviderService {
     link: string,
   ) {
     const message = `Değerli ortağımız.\nYeni kargo talebi oluşturulmuştur. \n ${link} linkinden detaylara ulaşabilirsiniz.\n\nKolikargo`;
-    this.userService.sendSMS('+905010704220', message);
+    await this.userService.sendSMS('+905010704220', message);
     return this.userService.sendSMS(cargoSupplierPhoneNumber, message);
   }
 
