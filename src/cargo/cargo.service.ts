@@ -430,13 +430,9 @@ export class CargoService {
     this.eventEmitter.emit('cargo.created', cargoCreatedEvent);
 
     // for supplier
-    const supplierUser = await this.cargoSupplierService.getCargoSupplierUser(
-      supplier.id,
-    );
     const cargoCreatedSupplierEvent = new CargoCreatedSupplierEvent();
     cargoCreatedSupplierEvent.cargoSupplierName = supplier.name;
-    cargoCreatedSupplierEvent.cargoSupplierPhoneNumber =
-      supplierUser.phoneNumber;
+    cargoCreatedSupplierEvent.cargoSupplierPhoneNumber = supplier.phoneNumber;
     cargoCreatedSupplierEvent.link = `https://tracking.kolikargo.com/track/${cargo.trackingNumber}?authToken=${supplier.publicAuthToken}`;
     this.eventEmitter.emit('cargo.created.supplier', cargoCreatedSupplierEvent);
 
