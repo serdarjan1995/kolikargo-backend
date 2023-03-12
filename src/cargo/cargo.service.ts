@@ -750,10 +750,19 @@ export class CargoService {
     return await this.getCargoType(cargoType.id);
   }
 
-  public async getCargoTypes(): Promise<CargoTypeModel[]> {
+  public async getCargoTypes(flat = false): Promise<CargoTypeModel[]> {
+    if (flat) {
+      // just return all cargo-types without modifying anything
+      return await this.cargoTypeModel
+        .find({}, { __v: false }, { sort: { order: 1 } })
+        .exec();
+    }
+    // get cargo-types with hasSubType=false
     const cargoTypesTopTier = await this.cargoTypeModel
       .find({ isSubType: false }, { __v: false }, { sort: { order: 1 } })
       .exec();
+
+    // add subTypes to its parent
     const subTypeAggregated: CargoTypeModel[] = [];
     for (let ct of cargoTypesTopTier) {
       ct = ct.toObject();

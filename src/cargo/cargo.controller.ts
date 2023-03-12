@@ -164,11 +164,14 @@ export class CargoTypeController {
     type: CargoTypeModel,
     isArray: true,
   })
-  public async getCargoTypes() {
-    return await this.cargoService.getCargoTypes();
+  public async getCargoTypes(@Query() query) {
+    return await this.cargoService.getCargoTypes(!!query?.flat);
   }
 
   @Post()
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Roles(Role.Admin)
   @ApiOkResponse({
     description: 'Successful Response',
@@ -182,6 +185,9 @@ export class CargoTypeController {
   }
 
   @Put(':id')
+  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Roles(Role.Admin)
   @ApiOkResponse({
     description: 'Successful Response',

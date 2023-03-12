@@ -24,7 +24,7 @@ services:
       MONGODB_PASSWORD: koliPasswd123mng!
 
   mongodb:
-    image: mongo:6.0.1
+    image: mongo:latest
     container_name: server-mongodb
     environment:
       - MONGO_INITDB_ROOT_USERNAME=koliadminmng!
@@ -43,7 +43,7 @@ services:
     restart: unless-stopped
 
   mongo-express:
-    image: mongo-express
+    image: mongo-express:latest
     container_name: server-mongo-express
     environment:
       - ME_CONFIG_MONGODB_SERVER=mongodb
@@ -68,7 +68,7 @@ services:
     restart: unless-stopped
 
   mongo-express-prod:
-    image: mongo-express
+    image: mongo-express:latest
     container_name: server-mongo-express-prod
     env_file:
       .env
