@@ -437,7 +437,7 @@ export class CargoService {
     cargoCreatedSupplierEvent.cargoSupplierName = supplier.name;
     cargoCreatedSupplierEvent.cargoSupplierPhoneNumber =
       supplierUser.phoneNumber;
-    cargoCreatedSupplierEvent.link = `https://api.kolikargo.com/track-cargo/${cargo.trackingNumber}?authToken=${supplier.publicAuthToken}`;
+    cargoCreatedSupplierEvent.link = `https://tracking.kolikargo.com/track/${cargo.trackingNumber}?authToken=${supplier.publicAuthToken}`;
     this.eventEmitter.emit('cargo.created.supplier', cargoCreatedSupplierEvent);
 
     return savedCargo;
