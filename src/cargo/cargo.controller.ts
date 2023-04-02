@@ -27,6 +27,7 @@ import {
   CARGO_STATUSES,
   CargoModel,
   CreateCargoModel,
+  UpdateCargoItemsModel,
   UpdateCargoStatusModel,
 } from './models/cargo.model';
 import { CargoPublicTrackingModel } from './models/cargoPublicTracking.model';
@@ -342,6 +343,47 @@ export class SupplierCargoController {
     }
 
     return await this.cargoService.updateCargo(
+      cargoId,
+      updateFields,
+      false,
+      filter,
+    );
+  }
+
+  @Put(':cargoId/cargo-items')
+  @Roles(Role.Admin, Role.Supplier)
+  @ApiOkResponse({
+    description: 'Successful Response',
+    type: CargoModel,
+  })
+  public async updateCargoItemsByCargoSupplier(
+    @Request() req,
+    @Param('cargoId') cargoId: string,
+    @Body() updateFields: UpdateCargoItemsModel,
+  ) {
+    const filter = {};
+    filter['supplier'] = await this.cargoSupplierService.idToObjectId(
+      req.user.id,
+    );
+
+    const cargo = await this.cargoService.getCargoByFiler({ id: cargoId });
+    const valid_statuses = [
+      CARGO_STATUSES.NEW_REQUEST,
+      CARGO_STATUSES.AWAITING_PICKUP,
+    ];
+    if (!valid_statuses.includes(<CARGO_STATUSES>cargo.status)) {
+      // restrict user to modify cargo contents if it is already in picked up
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: `Cargo items cannot be changed`,
+          errorCode: 'cargo_items_cannot_be_changed',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return await this.cargoService.updateCargoItems(
       cargoId,
       updateFields,
       false,

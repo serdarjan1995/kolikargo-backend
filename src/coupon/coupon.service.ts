@@ -8,7 +8,6 @@ import {
   ValidateCouponModel,
 } from './models/coupon.model';
 import { CargoSupplierService } from '../cargo-supplier/cargo-supplier.service';
-import { UserModel } from '../user/models/user.model';
 import { CargoService } from '../cargo/cargo.service';
 import { CARGO_STATUSES } from '../cargo/models/cargo.model';
 import { UserService } from '../user/user.service';
@@ -38,6 +37,16 @@ export class CouponService {
   public async getCoupons(filter: object): Promise<CouponModel[]> {
     return await this.couponModel
       .find(filter, CouponModelProjection)
+      .populate(this.populateFields)
+      .exec();
+  }
+
+  public async findCoupon(
+    filter: object,
+    noProjection = false,
+  ): Promise<CouponModel> {
+    return await this.couponModel
+      .findOne(filter, noProjection ? null : CouponModelProjection)
       .populate(this.populateFields)
       .exec();
   }
