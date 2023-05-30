@@ -460,8 +460,8 @@ export class CargoService {
     }
 
     // totalQtyOfPricePerItemProduct => 3$ per item
-    const serviceFee =
-      serviceFeePerWeight * totalWeight + totalQtyOfPricePerItemProduct * 3;
+    const serviceFee = 0;
+    //  serviceFeePerWeight * totalWeight + totalQtyOfPricePerItemProduct * 3;
 
     return {
       serviceFee,
